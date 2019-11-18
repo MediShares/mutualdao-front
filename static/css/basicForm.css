@@ -1,0 +1,160 @@
+.story-pl {
+  color: var(--light-grey-blue);
+}
+
+.photo-container {
+  border: 1px solid #e7ecf0;
+  border-radius: 4px;
+  overflow: hidden;
+  position: relative;
+}
+
+.basic-form .photo {
+  text-align: center;
+  padding: 48px 16px;
+  color: var(--darkColor);
+  height: 240px;
+}
+
+.photo input {
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+}
+
+.photo h5 {
+  font-family: Gotham-Medium;
+  font-weight: 500;
+  font-size: 14px;
+  line-height: 1.43;
+  margin: 16px 0 8px;
+}
+
+.photo-tip {
+  color: var(--light-grey-blue);
+}
+
+.photo-ext {
+  border-top: 1px solid #e7ecf0;
+}
+
+.photo-ext .blank {
+  overflow: hidden;
+  position: relative;
+  z-index: 100;
+  height: 52px;
+}
+
+.photo-ext .delete {
+  color: #f44336;
+  display: inline-block;
+  cursor: pointer;
+  position: relative;
+  z-index: 100;
+  padding: 16px;
+}
+
+.photo-ext .again {
+  color: var(--blueColor);
+  display: inline-block;
+  cursor: pointer;
+  padding: 16px;
+}
+
+.help {
+  float: right;
+  margin-top: 32px;
+  cursor: pointer;
+}
+
+.tooltip.bottom .tooltip-arrow {
+  border-bottom-color: #f7f7fa;
+}
+
+.tooltip.in {
+  opacity: 1;
+}
+
+.tooltip-inner {
+  background: #f7f7fa;
+  color: #000;
+  border-radius: 4px;
+  font-size: 12px;
+  line-height: 16px;
+  padding: 12px 8px;
+  text-align: left;
+  box-shadow: 0 2px 4px 0 rgba(0, 0, 0, 0.1);
+}
+
+.agree {
+  padding: 32px 0 0;
+  position: relative;
+}
+
+.agree input[type='checkbox'] {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 30px;
+  height: 100%;
+  opacity: 0;
+  z-index: 10;
+}
+
+.agree div {
+  padding-left: 30px;
+  background: url('../img/icon/web_icon_agreement_no.png')no-repeat left center/18px;
+}
+
+.agree a {
+  cursor: pointer;
+  color: var(--blueColor)!important;
+}
+
+.agree input:checked+div {
+  background: url('../img/icon/web_icon_agreement_yes.png')no-repeat left center/18px;
+}
+
+#rule .modal-content {
+  padding: 24px;
+}
+
+.modal .modal-title {
+  margin: 8px 0 20px;
+}
+
+.modal-content .info {
+  color: var(--blueGrey);
+  font: 500 16px/24px Gotham-Medium;
+  padding: 8px 16px;
+}
+
+#successModal .modal-content {
+  padding: 24px 0;
+}
+
+.platform_rules h5 {
+  font: 500 14px/24px Gotham-Medium;
+  color: var(--blueGrey);
+  margin: 10px 0;
+}
+
+.platform_rules p {
+  font-size: 14px;
+  line-height: 24px;
+  margin: 10px 0;
+  color: var(--blueGrey);
+}
+
+@media (max-width: 768px) {
+  .basic-form {
+    padding: 0;
+  }
+  .basic-group:last-of-type .basic-input {
+    margin-top: 16px;
+  }
+}

@@ -1,0 +1,87 @@
+<template>
+  <router-link
+    :to="{
+          path: '/projectDetail',
+          query: {
+            id: id
+          }
+        }"
+    class="program-list"
+  >
+    <div class="list-pic" :style="{backgroundImage: 'url(' + picture +')'}"></div>
+    <div class="info">
+      <h4>{{title}}</h4>
+      <p class="des" style="-webkit-box-orient: vertical">{{introduce}}</p>
+      <p class="pool">{{$t('mutual_aid_pool')}}:</p>
+      <div class="pool-amount">{{amount?amount:0}} {{token?token:'EOS'}}</div>
+      <div class="people">{{$t('people')}}: {{people?people:0}}</div>
+    </div>
+  </router-link>
+</template>
+
+<script>
+export default {
+  props: ["picture", "people", "amount", "id", "token", "introduce", "title"]
+};
+</script>
+
+<style scoped>
+.program-list {
+  display: block;
+  box-shadow: 0 2px 8px rgba(175, 175, 175, 0.5);
+  border-radius: 4px;
+  overflow: hidden;
+  background: #fff;
+}
+
+.list-pic {
+  height: 180px;
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: cover;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.02);
+}
+
+.info {
+  padding: 24px 16px;
+  color: var(--blueGrey);
+  font-size: 12px;
+  line-height: 1;
+}
+
+.info h4 {
+  color: var(--darkColor);
+  font: 400 20px/1.4 Gotham-book;
+  height: 28px;
+  margin-bottom: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.info .des {
+  line-height: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  -webkit-box-orient: vertical;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  height: 32px;
+}
+.info .pool {
+  color: var(--primaryColor);
+  margin-top: 32px;
+}
+.info .pool-amount {
+  color: var(--primaryColor);
+  font: 500 20px/20px Gotham-Medium;
+  margin: 8px 0 12px;
+}
+
+@media (max-width: 767px) {
+  .info .pool-amount {
+    font-size: 16px;
+    line-height: 16px;
+    margin: 4px 0 8px;
+  }
+}
+</style>
