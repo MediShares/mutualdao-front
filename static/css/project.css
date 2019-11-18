@@ -36,7 +36,7 @@
 .wait,
 .effect {
   font: 500 14px/16px Gotham-Medium;
-  margin-bottom: 24px;
+  margin-bottom: 32px;
 }
 
 .effect {
@@ -481,6 +481,13 @@
   }
   .claim-des.line-limit {
     max-height: 72px;
+  }
+  .vote-info li {
+    padding-left: 120px;
+  }
+  .vote-select {
+    width: calc(100% - 60px);
+    max-width: 160px;
   }
   .exchange {
     float: none;

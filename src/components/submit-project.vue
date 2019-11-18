@@ -348,7 +348,6 @@ export default {
           }
         } catch (e) {}
 
-        // 成功，调用我们的接口
         this.$http
           .post(this.domain + "apiDao/submitNewProject?v=1.0", formData, {
             cache: false,
@@ -386,9 +385,6 @@ export default {
     deletePic(event) {
       this.photo = "";
       this.isLoad = false;
-    },
-    dateToStamp() {
-      this.endTimeStamp = new Date(this.endTime).getTime() / 1000;
     },
     changetoken(event) {
       const target = event.target.value;

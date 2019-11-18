@@ -13,7 +13,7 @@ export default {
   created() {
     this.$router.afterEach((to, from) => {
       if (
-        // to.path == "/" ||
+        to.path == "/" ||
         to.path == "/submitProject" ||
         to.path == "/submitClaim" ||
         to.path == "/projectDetail"

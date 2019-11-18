@@ -27,8 +27,7 @@ export default new Router({
       component: () =>
         import ('../components/submit-claim'),
       props: (route) => ({
-        id: route.query.id,
-        projectAccount: route.query.projectAccount
+        id: route.query.id
       })
     },
     // 项目详情

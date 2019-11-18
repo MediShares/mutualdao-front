@@ -4,7 +4,7 @@
       <div class="row">
         <div class="col-md-8 col-md-offset-2">
           <div class="title">{{$t('submit_new_claim')}}</div>
-          <p class="subtitle">{{$t('project')}}: Cancer Fund</p>
+          <p class="subtitle" v-if="projectTitle">{{$t('project')}}：{{projectTitle}}</p>
           <form class="basic-form" accept-charset="utf-8" ref="form" enctype="multipart/form-data">
             <!-- 申请互助金额-->
             <label>{{$t('claim_amount')}}</label>
@@ -65,23 +65,6 @@
         </div>
       </div>
     </div>
-    <!-- Modal -->
-    <!-- <div class="modal" id="successModal">
-      <div class="modal-dialog" role="document">
-        <div class="modal-content text-center">
-          <button type="button" class="close" data-dismiss="modal">
-            <span aria-hidden="true">&times;</span>
-          </button>
-          <img src="static/img/icon/web_icon_success.png" width="92" />
-          <h4 class="modal-title">{{$t('apply_success')}}</h4>
-          <router-link
-            :to="'/projectDetail?id='+this.id"
-            data-dismiss="modal"
-            class="modal-close"
-          >{{$t('confirm')}}</router-link>
-        </div>
-      </div>
-    </div>-->
     <successModal :title="$t('apply_success')" :link="'/projectDetail?id='+this.id" />
     <div class="modal" id="rule">
       <div class="modal-dialog" role="document">
@@ -100,9 +83,11 @@
 import successModal from "base/success-modal";
 import sha from "js-sha256";
 export default {
-  props: ["id", "projectAccount"],
+  props: ["id"],
   data() {
     return {
+      projectTitle: "", //合约项目标题
+      projectAccount: "", //合约名
       checked: false, //是否同意规则
       email: "",
       amount: "", //【 筹款金额 】
@@ -113,7 +98,32 @@ export default {
       token: "EOS" //【 筹款Token,比如：EOS，IQ，MEV 】
     };
   },
+  created() {
+    this.getProjectInfo();
+  },
   methods: {
+    getProjectInfo() {
+      this.$http
+        .get(this.domain + "apiDao/getProjectInfo?v=1.0&id=" + this.id)
+        .then(res => {
+          if (res.data.success && res.data.data.data) {
+            this.projectAccount = res.data.data.data.targetAccount;
+            this.projectTitle = res.data.data.data.title;
+          } else {
+            this.projectAccount = "";
+            this.projectTitle = "";
+            this.$alert({
+              content: this.$t("project_error"),
+              btnText: this.$t("confirm")
+            }).then(() => {
+              this.$router.push("/");
+            });
+          }
+        })
+        .catch(err => {
+          console.log(err.statusText);
+        });
+    },
     uploadPic(event) {
       //获取的图片文件
       var fileList = event.target.files;
@@ -266,6 +276,11 @@ export default {
             });
           });
       });
+    }
+  },
+  watch: {
+    id() {
+      this.getProjectInfo();
     }
   },
   components: {

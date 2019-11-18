@@ -4,16 +4,17 @@
       <div class="row">
         <div class="col-sm-10 col-sm-offset-1">
           <h4 class="title">{{$t('apply_projects')}}</h4>
-          <template v-if="projects&&projects.length>0">
-            <myproject-list
-              v-for="(item,index) in projects"
-              :key="item.ID"
-              @deleteItem="deleteProject"
-              :index="index"
-              :isApplied="true"
-              :info="item"
-            ></myproject-list>
-          </template>
+          <ul v-if="projects&&projects.length>0">
+            <li v-for="(item,index) in projects" :key="item.ID">
+              <myproject-list
+                v-if="item.project.ID"
+                @deleteItem="deleteProject"
+                :index="index"
+                :isApplied="true"
+                :info="item"
+              ></myproject-list>
+            </li>
+          </ul>
           <blank-page :isApplied="true" v-else></blank-page>
         </div>
       </div>
@@ -46,7 +47,7 @@ export default {
           });
       });
     },
-    deleteProject(index, id, targetAccount) {
+    deleteProject(index, id, case_id, targetAccount) {
       this.setLoading(true);
       // 判断是否登录
       this.getAccount().then(res => {
@@ -66,7 +67,7 @@ export default {
                 ],
                 data: {
                   account: res.name, // 互助申请人--》当前登录账户
-                  case_id: id // 申请互助 id
+                  case_id: case_id // 申请互助 id
                 }
               }
             ]

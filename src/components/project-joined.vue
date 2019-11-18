@@ -4,9 +4,11 @@
       <div class="row">
         <div class="col-sm-10 col-sm-offset-1">
           <h4 class="title">{{$t('joined_projects')}}</h4>
-          <template v-if="projects&&projects.length>0">
-            <myproject-list v-for="item in projects" :key="item.ID" :info="item" :isJoined="true"></myproject-list>
-          </template>
+          <ul v-if="projects&&projects.length>0">
+            <li v-for="item in projects" :key="item.ID">
+              <myproject-list :info="item" :isJoined="true" v-if="item.project.ID"></myproject-list>
+            </li>
+          </ul>
           <blank-page v-else></blank-page>
         </div>
       </div>

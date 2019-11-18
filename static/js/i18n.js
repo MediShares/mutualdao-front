@@ -34,7 +34,8 @@ let i18n = new vueI18n({
     'cn': require('../lang/cn'),
     'en': require('../lang/en'),
     'ko': require('../lang/ko')
-  }
+  },
+  silentTranslationWarn: true,
 })
 
 function isJSON(str) {

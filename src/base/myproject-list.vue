@@ -1,25 +1,21 @@
 <template>
   <div class="myproject-list">
     <!-- 我申请的互助 -->
-    <router-link :to="{path: '/projectDetail',query: {id: info.project.ID}}" v-if="isApplied">
+    <article :class="{poiner:info.flagDeleted==0}" @click="goDetail(info)" v-if="isApplied">
       <div class="list-pic" :style="{backgroundImage: 'url(' + info.project.img +')'}"></div>
       <div class="info">
         <h4>{{info.project.title}}</h4>
         <ul class="time">
-          <li>{{$t('status')}}：{{info.flagDeleted==1?$t('deleted'):(info.status==0?$t('voting'):$t('executed'))}}</li>
+          <li>{{$t('status')}}：{{info.flagDeleted==1?$t('deleted'):(info.status==1?$t('executed'):$t(info.status))}}</li>
           <li>{{$t('claim_time')}}：{{info.createDate}}</li>
           <li>{{$t('claim_amount')}}：{{info.amount}} {{info.project.token}}</li>
         </ul>
-        <p class="btn-box">
+        <p class="btn-box" v-if="info.flagDeleted==0">
           <span>{{$t('view')}}</span>
-          <span
-            v-if="info.flagDeleted==0"
-            class="delete"
-            @click.prevent="deleteProject"
-          >{{$t('delete')}}</span>
+          <span class="delete" v-if="info.status!=1" @click.stop="deleteProject">{{$t('delete')}}</span>
         </p>
       </div>
-    </router-link>
+    </article>
     <!-- 我支持的项目 -->
     <router-link
       class="clearfix"
@@ -60,21 +56,75 @@
 
 <script>
 export default {
-  props: ["index", "isJoined", "isApplied", "flagDeleted", "info"],
+  props: ["index", "isJoined", "isApplied", "info"],
+  created() {
+    if (this.isApplied) {
+      this.getCases();
+    }
+  },
   methods: {
     deleteProject() {
       this.$emit(
         "deleteItem",
         this.index,
         this.info.ID,
+        this.info.case_id,
         this.info.project.targetAccount
       );
+    },
+    goDetail(info) {
+      if (info.flagDeleted == 0) {
+        this.$router.push({
+          path: "/projectDetail",
+          query: { id: info.project.ID }
+        });
+      }
+    },
+    getCases() {
+      // 从链上获取投票详情
+      this.$http
+        .post(this.table_url, {
+          json: true,
+          code: this.info.project.targetAccount, //项目合约账户
+          scope: this.info.project.targetAccount, //项目合约账户
+          table: "cases"
+        })
+        .then(result => {
+          let voteArr = result.data.rows;
+          if (voteArr && voteArr.length > 0) {
+            for (let i = 0; i < voteArr.length; i++) {
+              // 找到相同的caseName 将投票数追加到case列表
+              if (
+                this.info.status == 0 &&
+                voteArr[i].case_digest == this.info.caseName
+              ) {
+                this.$set(this.info, "case_id", voteArr[i].case_id);
+                let vote_no = voteArr[i].vote_no.split(" ")[0];
+                let vote_yes = voteArr[i].vote_yes.split(" ")[0];
+                let outdate = Date.now() - new Date(this.info.endDate) >= 0;
+                if (outdate) {
+                  this.info.status = vote_yes > vote_no ? "pending" : "refused";
+                } else {
+                  this.info.status = "voting";
+                }
+
+                return false;
+              }
+            }
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
     }
   }
 };
 </script>
 
 <style scoped>
+.poiner {
+  cursor: pointer;
+}
 .myproject-list {
   display: block;
   border: 1px solid var(--very-light-blue);

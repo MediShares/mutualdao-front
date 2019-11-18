@@ -31,6 +31,11 @@ export default {
     }
   },
 
+  // 替换字符串中的换行符和空格符
+  getFormatCode(strValue) {
+    return strValue.replace(/\r\n/g, '<br/>').replace(/\n/g, '<br/>').replace(/\s/g, ' ');
+  },
+
   // 获取路径参数
   getQueryString(name) {
     var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");

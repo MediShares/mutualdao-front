@@ -48,7 +48,7 @@
                 <!-- 生效中 -->
                 <p class="effect" v-if="remaining<=0">{{$t('effectivity')}}</p>
                 <!-- 等待期 -->
-                <p class="wait" v-else>{{$t('waiting_period').replace('%d',Math.ceil(remaining))}}</p>
+                <p class="wait" v-else>{{$t('waiting_period').replace('%d',remaining)}}</p>
               </template>
               <h4 class="pro-value">{{user.aidBalance}}</h4>
               <p class="pro-key">{{$t("mutual_aid_balance")}} ({{project.token}})</p>
@@ -157,7 +157,11 @@
                     <article class="claim-info">
                       <!-- 申请文案 -->
                       <div :class="[{'line-limit':!item.hasReadAll},'claim-des']">
-                        <p ref="claimText" class="claim-text" v-html="item.story"></p>
+                        <p
+                          ref="claimText"
+                          class="claim-text"
+                          v-html="webUtil.getFormatCode(item.story)"
+                        ></p>
                         <a
                           class="read-more"
                           @click="item.hasReadAll=true"
@@ -190,15 +194,15 @@
                           <p class="vote-select" v-if="item.status==1">{{$t('executed')}}</p>
                           <p
                             class="vote-select"
-                            v-else-if="getStatus(item,'pending')"
+                            v-else-if="item.status=='pending'"
                           >{{$t('pending')}}</p>
                           <p
                             class="vote-select"
-                            v-else-if="getStatus(item,'refused')"
+                            v-else-if="item.status=='refused'"
                           >{{$t('refused')}}</p>
                           <p class="vote-select" v-else>{{$t('voting')}}</p>
                           <a
-                            v-if="getStatus(item,'pending')"
+                            v-if="item.status=='pending'"
                             class="btn"
                             @click="executeClaim(item)"
                           >{{$t('execute')}}</a>
@@ -220,37 +224,43 @@
                         <p>{{item.endTime}}</p>
                       </li>
                       <li>
-                        <span class="label-name">{{$t('voting')}}</span>
+                        <span class="label-name">{{$t('vote_number')}}</span>
                         <div class="clearfix">
                           <!-- 同意票 -->
                           <p class="vote-select">{{$t('agree')}}: {{item.vote_yes}}</p>
-                          <a
-                            v-if="!item.isAgree"
-                            class="btn"
-                            @click="voteAgree(item)"
-                          >{{$t('vote')}}</a>
-                          <a
-                            v-else
-                            class="btn btn-grey"
-                            @click="cancelAgreeVote(item)"
-                          >{{$t('cancel')}}</a>
+                          <!-- 未过期case 才显示投票按钮 -->
+                          <template v-if="item.status=='voting'">
+                            <a
+                              v-if="!item.isAgree"
+                              class="btn"
+                              @click="voteAgree(item)"
+                            >{{$t('vote')}}</a>
+                            <a
+                              v-else
+                              class="btn btn-grey"
+                              @click="cancelAgreeVote(item)"
+                            >{{$t('cancel')}}</a>
+                          </template>
                         </div>
                         <div class="clearfix">
                           <!-- 反对票 -->
                           <p class="vote-select">{{$t('disagree')}}: {{item.vote_no}}</p>
-                          <a
-                            v-if="!item.isDisagree"
-                            class="btn"
-                            @click="voteDisagree(item)"
-                          >{{$t('vote')}}</a>
-                          <a
-                            v-else
-                            class="btn btn-grey"
-                            @click="cancelDisagreeVote(item)"
-                          >{{$t('cancel')}}</a>
+                          <!-- 未过期case 才显示投票按钮 -->
+                          <template v-if="item.status=='voting'">
+                            <a
+                              v-if="!item.isDisagree"
+                              class="btn"
+                              @click="voteDisagree(item)"
+                            >{{$t('vote')}}</a>
+                            <a
+                              v-else
+                              class="btn btn-grey"
+                              @click="cancelDisagreeVote(item)"
+                            >{{$t('cancel')}}</a>
+                          </template>
                         </div>
                       </li>
-                      <li>
+                      <li v-if="item.status!=1">
                         <!-- 社区论坛 -->
                         <span class="label-name">{{$t('DAO_discussion')}}</span>
                         <a href="http://medishares.org" target="_blank">http://medishares.org</a>
@@ -393,7 +403,6 @@
 import foot from "base/foot";
 import successModal from "base/success-modal";
 import Clipboard from "clipboard";
-import sha from "js-sha256";
 export default {
   props: ["id"],
   data() {
@@ -444,14 +453,14 @@ export default {
       link: window.location.href + "&from=",
       copyBtn: "",
       isNull: false,
-      totalEosPriceUsd: 0,
       join: {
         amount: "", //支付金额
         account: "" //受益人
       },
       // 交易成功弹窗
       successModalTitle: "",
-      successModalInfo: null
+      successModalInfo: null,
+      outdateInterval: null //投票状态定时器
     };
   },
   computed: {
@@ -472,9 +481,20 @@ export default {
   },
   created() {
     this.init();
+    // 实时获取投票状态
+    this.outdateInterval = setInterval(() => {
+      if (this.claimsList && this.claimsList.length > 0) {
+        this.claimsList.map(item => {
+          if (item.status != 1) {
+            item.status = this.getStatus(item);
+          }
+        });
+      }
+    }, 10000);
   },
   mounted() {
     this.copyBtn = new Clipboard(this.$refs.copy);
+
     // 支付按钮悬浮
     this.togglePayment();
     this.tabFix();
@@ -483,206 +503,12 @@ export default {
       this.tabFix();
     });
   },
+  beforeDestroy() {
+    if (this.outdateInterval) {
+      clearInterval(this.outdateInterval); //关闭
+    }
+  },
   methods: {
-    getStatus(item, type) {
-      let status = false;
-      if (item.status == 0 && item.vote_yes && item.vote_no) {
-        let b = item.status == 0 && Date.now() - (new Date(item.endTime) <= 0);
-        status =
-          type == "pending"
-            ? b && item.vote_yes > item.vote_no
-            : b && item.vote_yes < item.vote_no;
-      }
-      return status;
-    },
-    init() {
-      // loading
-      this.setLoading(true);
-      // 获取分享记录
-      this.getShareHistory();
-      // 获取互助记录
-      this.getAidHistory();
-      // 获取项目详情
-      this.getProjectInfo();
-    },
-    // 获取项目详情
-    getProjectInfo() {
-      this.$http
-        .get(
-          this.domain +
-            "apiDao/getProjectInfo?v=1.0&id=" +
-            this.id +
-            "&account=" +
-            (this.account ? this.account.name : "")
-        )
-        .then(res => {
-          this.setLoading(false);
-          if (res.data.success) {
-            let project = res.data.data;
-            if (!project) {
-              this.isNull = true;
-              return false;
-            }
-            // 项目信息
-            this.project = project.data;
-            this.permission = project.permission;
-            this.remaining = project.remaining;
-
-            $(".details img").css({
-              width: "100%",
-              margin: "10px 0"
-            });
-
-            // 获取key价格
-            this.getKeyPrice();
-
-            // 获取互助申请列表
-            this.getCases();
-
-            // 从链上查项目详情
-            this.$http
-              .post(this.table_url, {
-                json: true,
-                code: this.project.targetAccount, //项目合约账户
-                scope: this.project.targetAccount, //项目合约账户
-                table: "global"
-              })
-              .then(result => {
-                if (result.data.rows.length > 0) {
-                  this.pool = result.data.rows[0];
-                }
-              })
-              .catch(err => {
-                console.log(err);
-              });
-
-            // 从链上查用户详情
-            if (this.account) {
-              this.$http
-                .post(this.table_url, {
-                  json: true,
-                  code: this.project.targetAccount, //项目合约账户
-                  scope: this.project.targetAccount, //项目合约账户
-                  limit: "1",
-                  lower_bound: this.account.name,
-                  table: "accounts"
-                })
-                .then(result => {
-                  if (
-                    result.data.rows[0] &&
-                    result.data.rows[0].account == this.account.name
-                  ) {
-                    this.user = result.data.rows[0];
-                    let asset = this.user.asset_list;
-                    asset.map(val => {
-                      let key = val.balance.split(" ")[1];
-                      let value = val.balance.split(" ")[0];
-                      this.user[key] = value;
-                    });
-                    this.user.aidBalance = this.user.EOS ? this.user.EOS : 0;
-                    this.user.Key = this.user.KEY ? this.user.KEY : 0;
-                    this.user.SKey = this.user.SKEY ? this.user.SKEY : 0;
-                    // 初始化交换可用数据
-                    this.swapFrom.assets = this.user.Key;
-                    this.swapTo.assets = this.user.SKey;
-                  } else {
-                    this.user = null;
-                  }
-                })
-                .catch(err => {
-                  console.log(err);
-                });
-            }
-          } else {
-            this.isNull = true;
-          }
-        });
-    },
-    // 获取互助公示列表
-    getCases() {
-      this.$http
-        .get(this.domain + "apiDao/getProjectCases?v=1.0&id=" + this.id)
-        .then(res => {
-          if (res.data.success) {
-            this.claimsList = res.data.data;
-            if (this.claimsList && this.claimsList.length > 0) {
-              this.claimsList.map(item => {
-                // 投票数
-                this.$set(item, "vote_yes", 0);
-                this.$set(item, "vote_no", 0);
-                //公示内容是否展开
-                this.$set(item, "hasReadAll", false);
-              });
-
-              // 循环查投票数
-              setInterval(() => {
-                // 从链上获取投票详情
-                this.$http
-                  .post(this.table_url, {
-                    json: true,
-                    code: this.project.targetAccount, //项目合约账户
-                    scope: this.project.targetAccount, //项目合约账户
-                    table: "cases"
-                  })
-                  .then(result => {
-                    if (result.data.rows && result.data.rows.length > 0) {
-                      let voteArr = result.data.rows;
-                      for (let i = 0; i < voteArr.length; i++) {
-                        for (let j = 0; j < this.claimsList.length; j++) {
-                          const claim = this.claimsList[j];
-                          // 找到相同的caseName 将投票数追加到case列表
-                          if (voteArr[i].case_digest == claim.caseName) {
-                            this.$set(
-                              this.claimsList[j],
-                              "case_id",
-                              voteArr[i].case_id
-                            );
-                            this.claimsList[j].vote_no = voteArr[
-                              i
-                            ].vote_no.split(" ")[0];
-                            this.claimsList[j].vote_yes = voteArr[
-                              i
-                            ].vote_yes.split(" ")[0];
-
-                            // 获取登录用户投票数
-                            if (
-                              this.user &&
-                              this.user.vote_list &&
-                              this.user.vote_list.length > 0
-                            ) {
-                              this.user.vote_list.map(user => {
-                                if (
-                                  user.case_id == this.claimsList[j].case_id
-                                ) {
-                                  if (user.agreed) {
-                                    this.$set(
-                                      this.claimsList[j],
-                                      "isAgree",
-                                      true
-                                    );
-                                  } else {
-                                    this.$set(
-                                      this.claimsList[j],
-                                      "isDisagree",
-                                      true
-                                    );
-                                  }
-                                }
-                              });
-                            }
-                          }
-                        }
-                      }
-                    }
-                  })
-                  .catch(err => {
-                    console.log(err);
-                  });
-              }, 1000);
-            }
-          }
-        });
-    },
     // 样式js
     togglePayment() {
       if ($(".supportBtn")[0]) {
@@ -740,6 +566,218 @@ export default {
         }
       });
     },
+    // case 投票状态
+    getStatus(item) {
+      let status = "voting";
+      // 过期
+      let isOutdate = Date.now() - new Date(item.endTime) >= 0;
+
+      if (isOutdate) {
+        status = item.vote_yes > item.vote_no ? "pending" : "refused";
+      }
+
+      return status;
+    },
+    init() {
+      // loading
+      this.setLoading(true);
+      // 获取分享记录
+      this.getShareHistory();
+      // 获取互助记录
+      this.getAidHistory();
+      // 获取项目详情
+      this.getProjectInfo();
+    },
+    // 获取项目详情
+    getProjectInfo() {
+      this.$http
+        .get(
+          this.domain +
+            "apiDao/getProjectInfo?v=1.0&id=" +
+            this.id +
+            "&account=" +
+            (this.account ? this.account.name : "")
+        )
+        .then(res => {
+          this.setLoading(false);
+          if (res.data.success) {
+            let project = res.data.data;
+            if (!project) {
+              this.isNull = true;
+              return false;
+            }
+            // 项目信息
+            this.project = project.data;
+            this.permission = project.permission;
+            this.remaining = project.remaining;
+
+            $(".details img").css({
+              width: "100%",
+              margin: "10px 0"
+            });
+
+            // 获取key价格
+            this.getKeyPrice();
+
+            // 获取互助申请列表
+            this.getCases();
+
+            // 从链上查项目详情
+            this.$http
+              .post(this.table_url, {
+                json: true,
+                code: this.project.targetAccount, //项目合约账户
+                scope: this.project.targetAccount, //项目合约账户
+                table: "global"
+              })
+              .then(result => {
+                this.pool = result.data.rows[0];
+              })
+              .catch(err => {
+                console.log(err);
+              });
+
+            // 从链上查用户详情
+            if (this.account) {
+              this.$http
+                .post(this.table_url, {
+                  json: true,
+                  code: this.project.targetAccount, //项目合约账户
+                  scope: this.project.targetAccount, //项目合约账户
+                  limit: "1",
+                  lower_bound: this.account.name,
+                  table: "accounts"
+                })
+                .then(result => {
+                  if (
+                    result.data.rows[0] &&
+                    result.data.rows[0].account == this.account.name
+                  ) {
+                    this.user = result.data.rows[0];
+                    let asset = this.user.asset_list;
+                    asset.map(val => {
+                      let key = val.balance.split(" ")[1];
+                      let value = val.balance.split(" ")[0];
+                      this.user[key] = value;
+                    });
+                    this.user.aidBalance = this.user.EOS ? this.user.EOS : 0;
+                    this.user.Key = this.user.KEY ? this.user.KEY : 0;
+                    this.user.SKey = this.user.SKEY ? this.user.SKEY : 0;
+                    // 初始化交换可用数据
+                    this.swapFrom.assets = this.user.Key;
+                    this.swapTo.assets = this.user.SKey;
+                  } else {
+                    this.user = null;
+                  }
+                })
+                .catch(err => {
+                  console.log(err);
+                });
+            }
+          } else {
+            this.isNull = true;
+          }
+        });
+    },
+    // 获取互助公示列表
+    getCases() {
+      this.$http
+        .get(this.domain + "apiDao/getProjectCases?v=1.0&id=" + this.id)
+        .then(res => {
+          if (res.data.success) {
+            this.claimsList = res.data.data;
+            if (this.claimsList && this.claimsList.length > 0) {
+              this.claimsList.map(item => {
+                // 如果为已处理case，链上将其删除只能从数据库中拉取投票数
+                if (item.status == 1) {
+                  // 投票数
+                  this.$set(item, "vote_yes", item.agree);
+                  this.$set(item, "vote_no", item.disagree);
+                } else {
+                  // 投票数
+                  this.$set(item, "vote_yes", 0);
+                  this.$set(item, "vote_no", 0);
+                  // 投票状态
+                  item.status = this.getStatus(item);
+                }
+
+                //公示内容是否展开
+                this.$set(item, "hasReadAll", false);
+              });
+
+              // 从链上获取投票详情
+              this.$http
+                .post(this.table_url, {
+                  json: true,
+                  code: this.project.targetAccount, //项目合约账户
+                  scope: this.project.targetAccount, //项目合约账户
+                  table: "cases"
+                })
+                .then(result => {
+                  let voteArr = result.data.rows;
+                  if (voteArr && voteArr.length > 0) {
+                    for (let i = 0; i < voteArr.length; i++) {
+                      for (let j = 0; j < this.claimsList.length; j++) {
+                        let claim = this.claimsList[j];
+                        // 找到相同的caseName 将投票数追加到case列表
+                        if (
+                          claim.status != 1 &&
+                          voteArr[i].case_digest == claim.caseName
+                        ) {
+                          this.$set(
+                            this.claimsList[j],
+                            "case_id",
+                            voteArr[i].case_id
+                          );
+                          this.claimsList[j].vote_no = voteArr[i].vote_no.split(
+                            " "
+                          )[0];
+                          this.claimsList[j].vote_yes = voteArr[
+                            i
+                          ].vote_yes.split(" ")[0];
+
+                          // 投票状态
+                          this.claimsList[j].status = this.getStatus(
+                            this.claimsList[j]
+                          );
+
+                          // 获取登录用户投票数所投未过期case投票数
+                          if (
+                            !this.getStatus(claim) &&
+                            this.user &&
+                            this.user.vote_list &&
+                            this.user.vote_list.length > 0
+                          ) {
+                            this.user.vote_list.map(user => {
+                              if (user.case_id == this.claimsList[j].case_id) {
+                                if (user.agreed) {
+                                  this.$set(
+                                    this.claimsList[j],
+                                    "isAgree",
+                                    true
+                                  );
+                                } else {
+                                  this.$set(
+                                    this.claimsList[j],
+                                    "isDisagree",
+                                    true
+                                  );
+                                }
+                              }
+                            });
+                          }
+                        }
+                      }
+                    }
+                  }
+                })
+                .catch(err => {
+                  console.log(err);
+                });
+            }
+          }
+        });
+    },
     // 获取历史记录
     getShareHistory() {
       if (this.account) {
@@ -781,8 +819,7 @@ export default {
         this.$router.push({
           path: "/submitClaim",
           query: {
-            id: this.id,
-            projectAccount: this.project.targetAccount
+            id: this.id
           }
         });
       } else {
@@ -1029,7 +1066,9 @@ export default {
                 .post(
                   this.domain + "apiDao/caseExecute?v=1.0",
                   {
-                    id: item.case_id
+                    id: item.ID, //数据库ID
+                    agree: item.vote_yes, //赞同票数
+                    disagree: item.vote_no //反对票数
                   },
                   {
                     emulateJSON: true
@@ -1048,6 +1087,9 @@ export default {
                       btnText: this.$t("confirm")
                     });
                   }
+                })
+                .catch(err => {
+                  console.log(err);
                 });
             },
             error => {
