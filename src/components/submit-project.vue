@@ -304,9 +304,9 @@ export default {
           return false;
         }
         if (
-          parseFloat(this.mutualPercent) +
-            parseFloat(this.dividendPercent) +
-            parseFloat(this.referralRatio) !=
+          parseFloat(this.mutualPercent - 0) +
+            parseFloat(this.dividendPercent - 0) +
+            parseFloat(this.referralRatio - 0) !=
           100
         ) {
           this.$toast(this.$t("percent_limit"));
