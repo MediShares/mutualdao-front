@@ -11,7 +11,7 @@
             <input
               autocomplete="off"
               name="amount"
-              type="text"
+              type="number"
               class="basic-input"
               v-model="amount"
               :placeholder="$t('number_claim_amount')"
@@ -167,12 +167,14 @@ export default {
           this.$toast(this.$t("form_match_photos"));
           return false;
         }
-
         if (this.amount <= 0) {
           this.$toast(this.$t("form_match_no_negative"));
           return false;
         }
-
+        if (this.email && !this.webUtil.emailFormat(this.email)) {
+          this.$toast(this.$t("email_error"));
+          return false;
+        }
         if (!this.checked) {
           this.$toast(this.$t("agree_terms"));
           return false;
@@ -256,8 +258,11 @@ export default {
             },
             error => {
               if (JSON.parse(error)) {
+                let content = JSON.parse(error).error.details[0].message;
                 this.$alert({
-                  content: JSON.parse(error).error.details[0].message,
+                  content: content.split(":")[1]
+                    ? content.split(":")[1]
+                    : content,
                   btnText: this.$t("confirm")
                 });
               } else {

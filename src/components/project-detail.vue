@@ -366,7 +366,7 @@
               <span aria-hidden="true">&times;</span>
             </button>
             <h4 class="modal-title">{{$t('join')}}</h4>
-            <span class="token-price">1 EOS ≈ {{bigNumber(1).div(this.keyPrice).toFixed(0)}} Key</span>
+            <span class="token-price">1 EOS ≈ {{joinKeyNumber(1)}} Key</span>
             <label>{{$t('number_assets')}}</label>
             <p class="basic-group">
               <input
@@ -377,7 +377,7 @@
                 autocomplete="off"
               />
               <span class="target-token">{{project.token}}</span>
-              <span class="equal">≈ {{joinEqalKey}} Key</span>
+              <span class="equal">≈ {{joinKeyNumber(join.amount)}} Key</span>
             </p>
             <label>{{$t('beneficiary_account')}}</label>
             <p class="basic-group">
@@ -386,7 +386,7 @@
                 v-model="join.account"
                 :placeholder="$t('beneficiary_account')"
               />
-              <a class="target-token" @click="join.account=account.name">{{$t('current_account')}}</a>
+              <a class="target-token" @click="join.account=''">{{$t('switch_beneficiary')}}</a>
             </p>
             <div class="confirm btn" @click="joinConfirm">{{$t('join')}}</div>
           </div>
@@ -404,7 +404,7 @@ import foot from "base/foot";
 import successModal from "base/success-modal";
 import Clipboard from "clipboard";
 export default {
-  props: ["id"],
+  props: ["id", "tab"],
   data() {
     return {
       project: {
@@ -450,7 +450,7 @@ export default {
       },
       swapNumber: "",
       // 项目链接
-      link: window.location.href + "&from=",
+      link: window.location.origin + "/#/projectDetail?id=" + this.id,
       copyBtn: "",
       isNull: false,
       join: {
@@ -464,13 +464,6 @@ export default {
     };
   },
   computed: {
-    joinEqalKey() {
-      let assets = this.join.amount ? this.join.amount : 0;
-      let keyNumber = this.bigNumber(assets)
-        .div(this.keyPrice)
-        .toFixed(0);
-      return keyNumber;
-    },
     sellKeyPrice() {
       let number = this.sellKeyNumber ? this.sellKeyNumber : 0;
       let assets = this.bigNumber(number)
@@ -480,7 +473,11 @@ export default {
     }
   },
   created() {
+    this.activeTab =
+      this.tab && this.tabs.includes(this.tab) ? this.tab : "details";
+    // 初始化
     this.init();
+
     // 实时获取投票状态
     this.outdateInterval = setInterval(() => {
       if (this.claimsList && this.claimsList.length > 0) {
@@ -540,7 +537,7 @@ export default {
     // 复制粘贴
     copyVal() {
       this.getAccount().then(account => {
-        this.link = this.link + account.name;
+        this.link = this.link + "&from=" + account.name;
         // 复制粘贴
         if (this.webUtil.browserVersions().android) {
           let clipboard = this.copyBtn;
@@ -577,6 +574,16 @@ export default {
       }
 
       return status;
+    },
+    // 加入弹窗key与EOS比例
+    joinKeyNumber(amount) {
+      let assets = amount ? amount : 0;
+      let keyNumber = this.bigNumber(assets)
+        .multipliedBy(this.project.dividendPercent)
+        .div(100)
+        .div(this.keyPrice)
+        .toFixed(0);
+      return keyNumber;
     },
     init() {
       // loading
@@ -673,6 +680,8 @@ export default {
                 .catch(err => {
                   console.log(err);
                 });
+            } else {
+              this.user = null;
             }
           } else {
             this.isNull = true;
@@ -740,15 +749,19 @@ export default {
                           this.claimsList[j].status = this.getStatus(
                             this.claimsList[j]
                           );
-
-                          // 获取登录用户投票数所投未过期case投票数
+                          // 获取登录用户所投未过期case的票数
                           if (
-                            !this.getStatus(claim) &&
+                            this.getStatus(claim) == "voting" &&
                             this.user &&
                             this.user.vote_list &&
                             this.user.vote_list.length > 0
                           ) {
-                            this.user.vote_list.map(user => {
+                            for (
+                              let u = 0;
+                              u < this.user.vote_list.length;
+                              u++
+                            ) {
+                              let user = this.user.vote_list[u];
                               if (user.case_id == this.claimsList[j].case_id) {
                                 if (user.agreed) {
                                   this.$set(
@@ -764,7 +777,7 @@ export default {
                                   );
                                 }
                               }
-                            });
+                            }
                           }
                         }
                       }
@@ -871,7 +884,15 @@ export default {
             res => {
               this.successModalTitle = "vote_success";
               $("#successModal").modal("show");
+              let _this = this;
               $("#successModal").on("hidden.bs.modal", function(e) {
+                _this.$router.push({
+                  path: "/projectDetail",
+                  query: {
+                    id: _this.id,
+                    tab: "claims"
+                  }
+                });
                 window.location.reload();
               });
             },
@@ -942,7 +963,15 @@ export default {
           .then(res => {
             this.successModalTitle = "vote_success";
             $("#successModal").modal("show");
+            let _this = this;
             $("#successModal").on("hidden.bs.modal", function(e) {
+              _this.$router.push({
+                path: "/projectDetail",
+                query: {
+                  id: _this.id,
+                  tab: "claims"
+                }
+              });
               window.location.reload();
             });
           })
@@ -982,7 +1011,15 @@ export default {
           .then(res => {
             this.successModalTitle = "cancelvote_success";
             $("#successModal").modal("show");
+            let _this = this;
             $("#successModal").on("hidden.bs.modal", function(e) {
+              _this.$router.push({
+                path: "/projectDetail",
+                query: {
+                  id: _this.id,
+                  tab: "claims"
+                }
+              });
               window.location.reload();
             });
           })
@@ -1022,7 +1059,15 @@ export default {
           .then(res => {
             this.successModalTitle = "cancelvote_success";
             $("#successModal").modal("show");
+            let _this = this;
             $("#successModal").on("hidden.bs.modal", function(e) {
+              _this.$router.push({
+                path: "/projectDetail",
+                query: {
+                  id: _this.id,
+                  tab: "claims"
+                }
+              });
               window.location.reload();
             });
           })
@@ -1078,7 +1123,15 @@ export default {
                   if (result.data.success) {
                     this.successModalTitle = "exec_success";
                     $("#successModal").modal("show");
+                    let _this = this;
                     $("#successModal").on("hidden.bs.modal", function(e) {
+                      _this.$router.push({
+                        path: "/projectDetail",
+                        query: {
+                          id: _this.id,
+                          tab: "claims"
+                        }
+                      });
                       window.location.reload();
                     });
                   } else {
@@ -1095,10 +1148,11 @@ export default {
             error => {
               // 失败
               if (JSON.parse(error)) {
+                let content = JSON.parse(error).error.details[0].message;
                 this.$alert({
-                  content: JSON.parse(error).error.details[0].message.split(
-                    ":"
-                  )[1],
+                  content: content.split(":")[1]
+                    ? content.split(":")[1]
+                    : content,
                   btnText: this.$t("confirm")
                 });
               } else {
@@ -1172,15 +1226,26 @@ export default {
                 " " +
                 this.project.token;
               $("#successModal").modal("show");
+              let _this = this;
               $("#successModal").on("hidden.bs.modal", function(e) {
+                _this.$router.push({
+                  path: "/projectDetail",
+                  query: {
+                    id: _this.id,
+                    tab: "trade"
+                  }
+                });
                 window.location.reload();
               });
             },
             error => {
               // 失败
               if (JSON.parse(error)) {
+                let content = JSON.parse(error).error.details[0].message;
                 this.$alert({
-                  content: JSON.parse(error).error.details[0].message,
+                  content: content.split(":")[1]
+                    ? content.split(":")[1]
+                    : content,
                   btnText: this.$t("confirm")
                 });
               } else {
@@ -1260,7 +1325,15 @@ export default {
             " = " + this.swapNumber;
             " " + this.swapTo.name;
             $("#successModal").modal("show");
+            let _this = this;
             $("#successModal").on("hidden.bs.modal", function(e) {
+              _this.$router.push({
+                path: "/projectDetail",
+                query: {
+                  id: _this.id,
+                  tab: "trade"
+                }
+              });
               window.location.reload();
             });
           })
@@ -1277,6 +1350,7 @@ export default {
     // 点击页面加入
     joinProject() {
       this.getAccount().then(res => {
+        this.join.account = res.name;
         $("#payment").modal("show");
       });
     },
@@ -1288,15 +1362,24 @@ export default {
       // 登录
       this.getAccount().then(account => {
         // 判断金额
-        if (this.join.amount - 0 < this.project.low) {
+        // 换算1key需要多少eos
+        let eosNumber = this.bigNumber(this.keyPrice)
+          .multipliedBy(100)
+          .div(this.project.dividendPercent)
+          .toFixed(4);
+
+        // 找出项目的最小限额和实际最少限额中的较大值设为加入项目最小额度
+        let lowLimit =
+          eosNumber > this.project.low ? eosNumber : this.project.low;
+
+        // 加入金额小于最低限额则不可加入
+        if (this.join.amount - 0 < lowLimit) {
           this.$toast(
-            this.$t("join_low_error") +
-              this.project.low +
-              " " +
-              this.project.token
+            this.$t("join_low_error") + lowLimit + " " + this.project.token
           );
           return false;
         }
+
         if (this.join.amount - 0 > this.project.high) {
           this.$toast(
             this.$t("join_high_error") +
@@ -1386,10 +1469,11 @@ export default {
             },
             error => {
               if (JSON.parse(error)) {
+                let content = JSON.parse(error).error.details[0].message;
                 this.$alert({
-                  content: JSON.parse(error).error.details[0].message.split(
-                    ":"
-                  )[1],
+                  content: content.split(":")[1]
+                    ? content.split(":")[1]
+                    : content,
                   btnText: this.$t("confirm")
                 });
               } else {
@@ -1439,9 +1523,13 @@ export default {
     account(to) {
       this.init();
     },
-    // 切换id
+    // 切换项目
     id(to) {
       this.init();
+    },
+    tab() {
+      this.activeTab =
+        this.tab && this.tabs.includes(this.tab) ? this.tab : "details";
     }
   },
   components: {

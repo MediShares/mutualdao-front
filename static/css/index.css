@@ -97,6 +97,10 @@ ul {
   display: none;
 }
 
+.wc-popup-text {
+  word-break: break-word;
+}
+
 .wc-toast .wc-toast-message {
   padding: 24px!important;
   padding-left: 60px!important;

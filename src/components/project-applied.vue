@@ -86,7 +86,7 @@ export default {
               .then(res => {
                 this.setLoading(false);
                 if (res.data.success) {
-                  this.$toast(this.$t("deleted_success"));
+                  this.$toast(this.$t("delete_success"));
                   this.$router.go(0);
                 } else {
                   this.$toast(res.data.message);

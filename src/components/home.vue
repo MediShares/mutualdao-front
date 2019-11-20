@@ -55,7 +55,10 @@ export default {
         .get(this.domain + "/apiDao/getProjectList?v=1.0&page=1")
         .then(res => {
           if (res.data.success) {
-            this.programs = res.data.data.data.slice(0, 3);
+            this.programs = res.data.data.data;
+            if (this.programs && this.programs.length > 0) {
+              this.programs = this.programs.slice(0, 3);
+            }
           }
           this.setLoading(false);
         })

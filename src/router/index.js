@@ -36,7 +36,8 @@ export default new Router({
       component: () =>
         import ('../components/project-detail'),
       props: (route) => ({
-        id: route.query.id
+        id: route.query.id,
+        tab: route.query.tab,
       })
     },
     // 我的项目

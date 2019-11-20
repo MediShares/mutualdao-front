@@ -312,16 +312,20 @@ export default {
           this.$toast(this.$t("percent_limit"));
           return false;
         }
-        if (this.low - 0 < 0.1) {
+        if (this.low <= 0) {
           this.$toast(this.$t("form_match_low_limit"));
           return false;
         }
-        if (this.high < 0) {
+        if (this.high <= 0) {
           this.$toast(this.$t("enter_maximum_amount"));
           return false;
         }
         if (this.high - 0 > 1000) {
           this.$toast(this.$t("form_match_high_limit"));
+          return false;
+        }
+        if (this.email && !this.webUtil.emailFormat(this.email)) {
+          this.$toast(this.$t("email_error"));
           return false;
         }
         if (!this.checked) {

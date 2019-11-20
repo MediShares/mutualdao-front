@@ -102,6 +102,10 @@ export default {
       mdsApp: u.indexOf('mdsapp') > -1, //是否MdsApp
       mdsVer: u.indexOf('mdsapp') > -1 ? u.match(/mdsapp\/[^\s]+\s?/)[0].trim().split('/')[1] : '0' //MdsApp版本
     };
+  },
+
+  emailFormat(email) {
+    return /^\w+([+-.]\w+)*@\w+([-.]\w+)*\.\w+([-.]\w+)*$/.test(email)
   }
 
 }
