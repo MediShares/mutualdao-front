@@ -26,7 +26,6 @@ export default {
     loginByScatter() {
       this.getAccount().then(
         res => {
-          $("#login").modal("hide");
           this.setLoading(false);
         },
         err => {

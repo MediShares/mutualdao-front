@@ -61,7 +61,7 @@
             <p class="btn btn-block supportBtn" @click="joinProject">{{$t('join')}}</p>
 
             <!-- 分享 -->
-            <p v-if="project.referralRatio>0">
+            <p v-if="project.referralRatio>0&&account">
               <a
                 class="copy-btn share-btn"
                 ref="copy"
@@ -211,7 +211,7 @@
                       <li>
                         <!-- 申请互助金额 -->
                         <span class="label-name">{{$t('claim_amount')}}</span>
-                        <p>{{item.amount}} {{item.token}}</p>
+                        <p>{{item.amount}} {{project.token}}</p>
                       </li>
                       <li>
                         <!-- 申请时间 -->
@@ -260,10 +260,13 @@
                           </template>
                         </div>
                       </li>
-                      <li v-if="item.status!=1">
+                      <li>
                         <!-- 社区论坛 -->
                         <span class="label-name">{{$t('DAO_discussion')}}</span>
-                        <a href="http://medishares.org" target="_blank">http://medishares.org</a>
+                        <router-link
+                          class="discussion"
+                          :to="'/discussion?id='+item.ID"
+                        >http://mutualdao.org</router-link>
                       </li>
                     </ul>
                   </li>
@@ -449,8 +452,7 @@ export default {
         assets: 0
       },
       swapNumber: "",
-      // 项目链接
-      link: window.location.origin + "/#/projectDetail?id=" + this.id,
+      // 分享按钮
       copyBtn: "",
       isNull: false,
       join: {
@@ -470,6 +472,14 @@ export default {
         .multipliedBy(this.keyPrice)
         .toFixed(4);
       return assets;
+    },
+    // 分享链接
+    link() {
+      let link = window.location.origin + "/#/projectDetail?id=" + this.id;
+      if (this.account) {
+        return link + "&from=" + this.account.name;
+      }
+      return link;
     }
   },
   created() {
@@ -536,38 +546,44 @@ export default {
     },
     // 复制粘贴
     copyVal() {
-      this.getAccount().then(account => {
-        this.link = this.link + "&from=" + account.name;
-        // 复制粘贴
-        if (this.webUtil.browserVersions().android) {
-          let clipboard = this.copyBtn;
-          clipboard.on("success", e => {
-            this.$toast(this.$t("copy_success"));
-            clipboard.destroy();
-            this.copyBtn = new Clipboard(this.$refs.copy);
+      // 复制粘贴
+      if (!this.webUtil.browserVersions().android) {
+        let clipboard = this.copyBtn;
+        clipboard.on("success", e => {
+          this.$toast(this.$t("copy_success"), {
+            toastStyle: {
+              backgroundImage: "url(static/img/icon/toast_yes.png)"
+            }
           });
-          clipboard.on("error", () => {
-            this.$toast(this.$t("copy_error"));
-            clipboard.destroy();
-            this.copyBtn = new Clipboard(this.$refs.copy);
-          });
-        } else {
-          let oInput = document.createElement("input");
-          oInput.type = "text";
-          oInput.value = this.link;
-          document.body.appendChild(oInput);
-          oInput.select(); // 选择对象
-          document.execCommand("Copy"); // 执行浏览器复制命令
-          oInput.parentNode.removeChild(oInput); //执行完之后删除该对象
-          this.$toast(this.$t("copy_success"));
-        }
-      });
+          clipboard.destroy();
+          this.copyBtn = new Clipboard(this.$refs.copy);
+        });
+        clipboard.on("error", () => {
+          this.$toast(this.$t("copy_error"));
+          clipboard.destroy();
+          this.copyBtn = new Clipboard(this.$refs.copy);
+        });
+      } else {
+        let oInput = document.createElement("input");
+        oInput.type = "text";
+        oInput.value = this.link;
+        document.body.appendChild(oInput);
+        oInput.select(); // 选择对象
+        document.execCommand("Copy"); // 执行浏览器复制命令
+        oInput.parentNode.removeChild(oInput); //执行完之后删除该对象
+        this.$toast(this.$t("copy_success"), {
+          toastStyle: {
+            backgroundImage: "url(static/img/icon/toast_yes.png)"
+          }
+        });
+      }
     },
     // case 投票状态
     getStatus(item) {
       let status = "voting";
       // 过期
-      let isOutdate = Date.now() - new Date(item.endTime) >= 0;
+      let isOutdate =
+        Date.now() - new Date(item.endTime.replace(/\-/g, "/")) >= 0;
 
       if (isOutdate) {
         status = item.vote_yes > item.vote_no ? "pending" : "refused";
@@ -844,21 +860,17 @@ export default {
     // 投票
     voteAgree(item) {
       if (!this.permission) {
-        this.$alert({
-          content: this.$t("vote_join_first"),
-          btnText: this.$t("confirm")
-        });
+        this.$toast(this.$t("vote_join_first"));
         return false;
       }
+
       this.getAccount().then(account => {
         // 可用余额不足
         if (!this.user || this.user.SKey <= 0) {
-          this.$alert({
-            content: this.$t("amount_less0"),
-            btnText: this.$t("confirm")
-          });
+          this.$toast(this.$t("amount_less0"));
           return false;
         }
+        this.setLoading(true);
         // 交易
         this.sctuser
           .getEos()
@@ -882,6 +894,7 @@ export default {
           })
           .then(
             res => {
+              this.setLoading(false);
               this.successModalTitle = "vote_success";
               $("#successModal").modal("show");
               let _this = this;
@@ -897,48 +910,38 @@ export default {
               });
             },
             error => {
+              this.setLoading(false);
               if (JSON.parse(error)) {
-                this.$alert({
-                  content: JSON.parse(error).error.details[0].message.split(
-                    ":"
-                  )[1],
-                  btnText: this.$t("confirm")
-                });
+                let content = JSON.parse(error).error.details[0].message;
+                content = content.split(":")[1]
+                  ? content.split(":")[1]
+                  : content;
+                this.$toast(content);
               } else {
-                this.$alert({
-                  content: this.$t("vote_error"),
-                  btnText: this.$t("confirm")
-                });
+                this.$toast(this.$t("vote_error"));
               }
             }
           )
           .catch(error => {
             // 失败
+            this.setLoading(false);
             console.log(error);
-            this.$alert({
-              content: this.$t("vote_error"),
-              btnText: this.$t("confirm")
-            });
+            this.$toast(this.$t("vote_error"));
           });
       });
     },
     voteDisagree(item) {
       if (!this.permission) {
-        this.$alert({
-          content: this.$t("vote_join_first"),
-          btnText: this.$t("confirm")
-        });
+        this.$toast(this.$t("vote_join_first"));
         return false;
       }
       this.getAccount().then(account => {
         // 可用余额不足
         if (!this.user || this.user.SKey <= 0) {
-          this.$alert({
-            content: this.$t("amount_less0"),
-            btnText: this.$t("confirm")
-          });
+          this.$toast(this.$t("amount_less0"));
           return false;
         }
+        this.setLoading(true);
         // 交易
         this.sctuser
           .getEos()
@@ -961,6 +964,7 @@ export default {
             ]
           })
           .then(res => {
+            this.setLoading(false);
             this.successModalTitle = "vote_success";
             $("#successModal").modal("show");
             let _this = this;
@@ -977,15 +981,14 @@ export default {
           })
           .catch(error => {
             // 失败
+            this.setLoading(false);
             console.log(error);
-            this.$alert({
-              content: this.$t("vote_error"),
-              btnText: this.$t("confirm")
-            });
+            this.$toast(this.$t("vote_error"));
           });
       });
     },
     cancelAgreeVote(item) {
+      this.setLoading(true);
       this.getAccount().then(account => {
         // 交易
         this.sctuser
@@ -1009,6 +1012,7 @@ export default {
             ]
           })
           .then(res => {
+            this.setLoading(false);
             this.successModalTitle = "cancelvote_success";
             $("#successModal").modal("show");
             let _this = this;
@@ -1025,15 +1029,14 @@ export default {
           })
           .catch(error => {
             // 失败
+            this.setLoading(false);
             console.log(error);
-            this.$alert({
-              content: this.$t("cancelvote_error"),
-              btnText: this.$t("confirm")
-            });
+            this.$toast(this.$t("cancelvote_error"));
           });
       });
     },
     cancelDisagreeVote(item) {
+      this.setLoading(true);
       this.getAccount().then(account => {
         // 交易
         this.sctuser
@@ -1057,6 +1060,7 @@ export default {
             ]
           })
           .then(res => {
+            this.setLoading(false);
             this.successModalTitle = "cancelvote_success";
             $("#successModal").modal("show");
             let _this = this;
@@ -1073,16 +1077,15 @@ export default {
           })
           .catch(error => {
             // 失败
+            this.setLoading(false);
             console.log(error);
-            this.$alert({
-              content: this.$t("cancelvote_error"),
-              btnText: this.$t("confirm")
-            });
+            this.$toast(this.$t("cancelvote_error"));
           });
       });
     },
     // 处理互助申请：拨款
     executeClaim(item) {
+      this.setLoading(true);
       this.getAccount().then(account => {
         // 交易
         this.sctuser
@@ -1120,6 +1123,7 @@ export default {
                   }
                 )
                 .then(result => {
+                  this.setLoading(false);
                   if (result.data.success) {
                     this.successModalTitle = "exec_success";
                     $("#successModal").modal("show");
@@ -1135,41 +1139,34 @@ export default {
                       window.location.reload();
                     });
                   } else {
-                    this.$alert({
-                      content: result.data.message,
-                      btnText: this.$t("confirm")
-                    });
+                    this.$toast(result.data.message);
                   }
                 })
                 .catch(err => {
+                  this.setLoading(false);
+                  this.$toast(this.$t("exec_error"));
                   console.log(err);
                 });
             },
             error => {
+              this.setLoading(false);
               // 失败
               if (JSON.parse(error)) {
                 let content = JSON.parse(error).error.details[0].message;
-                this.$alert({
-                  content: content.split(":")[1]
-                    ? content.split(":")[1]
-                    : content,
-                  btnText: this.$t("confirm")
-                });
+                content = content.split(":")[1]
+                  ? content.split(":")[1]
+                  : content;
+                this.$toast(content);
               } else {
-                this.$alert({
-                  content: this.$t("exec_error"),
-                  btnText: this.$t("confirm")
-                });
+                this.$toast(this.$t("exec_error"));
               }
             }
           )
           .catch(error => {
             // 失败
+            this.setLoading(false);
             console.log(error);
-            this.$alert({
-              content: this.$t("exec_error"),
-              btnText: this.$t("confirm")
-            });
+            this.$toast(this.$t("exec_error"));
           });
       });
     },
@@ -1178,20 +1175,15 @@ export default {
       this.getAccount().then(account => {
         // 输入数值
         if (this.sellKeyNumber <= 0) {
-          this.$alert({
-            content: this.$t("amount_less0"),
-            btnText: this.$t("confirm")
-          });
+          this.$toast(this.$t("amount_less0"));
           return false;
         }
         // 可用余额不足
         if (!this.user || this.sellKeyNumber > this.user.Key) {
-          this.$alert({
-            content: this.$t("more_available"),
-            btnText: this.$t("confirm")
-          });
+          this.$toast(this.$t("more_available"));
           return false;
         }
+        this.setLoading(true);
         // 交易
         this.sctuser
           .getEos()
@@ -1215,6 +1207,7 @@ export default {
           })
           .then(
             res => {
+              this.setLoading(false);
               this.successModalTitle = "sell_success";
               this.successModalInfo =
                 this.sellKeyNumber +
@@ -1239,30 +1232,24 @@ export default {
               });
             },
             error => {
+              this.setLoading(false);
               // 失败
               if (JSON.parse(error)) {
                 let content = JSON.parse(error).error.details[0].message;
-                this.$alert({
-                  content: content.split(":")[1]
-                    ? content.split(":")[1]
-                    : content,
-                  btnText: this.$t("confirm")
-                });
+                content = content.split(":")[1]
+                  ? content.split(":")[1]
+                  : content;
+                this.$toast(content);
               } else {
-                this.$alert({
-                  content: this.$t("sell_error"),
-                  btnText: this.$t("confirm")
-                });
+                this.$toast(this.$t("sell_error"));
               }
             }
           )
           .catch(error => {
+            this.setLoading(false);
             // 失败
             console.log(error);
-            this.$alert({
-              content: this.$t("sell_error"),
-              btnText: this.$t("confirm")
-            });
+            this.$toast(this.$t("sell_error"));
           });
       });
     },
@@ -1278,24 +1265,20 @@ export default {
       this.getAccount().then(account => {
         // 输入数值
         if (this.swapNumber <= 0) {
-          this.$alert({
-            content: this.$t("amount_less0"),
-            btnText: this.$t("confirm")
-          });
+          this.$toast(this.$t("amount_less0"));
           return false;
         }
         // 可用余额不足
         if (this.swapNumber > this.swapFrom.assets) {
-          this.$alert({
-            content: this.$t("more_available"),
-            btnText: this.$t("confirm")
-          });
+          this.$toast(this.$t("more_available"));
           return false;
         }
 
         // 合约方法
         let actionName =
           this.swapFrom.name == "Key" ? "stakekey" : "unstakekey";
+
+        this.setLoading(true);
 
         // 交易
         this.sctuser
@@ -1320,6 +1303,7 @@ export default {
             ]
           })
           .then(res => {
+            this.setLoading(false);
             this.successModalTitle = "swap_success";
             this.successModalInfo = this.swapNumber + " " + this.swapFrom.name;
             " = " + this.swapNumber;
@@ -1339,11 +1323,8 @@ export default {
           })
           .catch(error => {
             // 失败
-            console.log(error);
-            this.$alert({
-              content: this.$t("swap_error"),
-              btnText: this.$t("confirm")
-            });
+            this.setLoading(false);
+            this.$toast(this.$t("swap_error"));
           });
       });
     },
@@ -1452,44 +1433,30 @@ export default {
                       window.location.reload();
                     });
                   } else {
-                    this.$alert({
-                      content: res.data.message,
-                      btnText: this.$t("confirm")
-                    });
+                    this.$toast(res.data.message);
                   }
                 })
                 .catch(error => {
                   // 失败
                   console.log(error);
-                  this.$alert({
-                    content: this.$t("join_error"),
-                    btnText: this.$t("confirm")
-                  });
+                  this.$toast(this.$t("join_error"));
                 });
             },
             error => {
               if (JSON.parse(error)) {
                 let content = JSON.parse(error).error.details[0].message;
-                this.$alert({
-                  content: content.split(":")[1]
-                    ? content.split(":")[1]
-                    : content,
-                  btnText: this.$t("confirm")
-                });
+                content = content.split(":")[1]
+                  ? content.split(":")[1]
+                  : content;
+                this.$toast(content);
               } else {
-                this.$alert({
-                  content: this.$t("join_error"),
-                  btnText: this.$t("confirm")
-                });
+                this.$toast(this.$t("join_error"));
               }
             }
           )
           .catch(error => {
             // 失败
-            this.$alert({
-              content: this.$t("join_error"),
-              btnText: this.$t("confirm")
-            });
+            this.$toast(this.$t("join_error"));
           });
         // end 交易
       });

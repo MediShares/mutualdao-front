@@ -184,4 +184,10 @@ module.exports = {
   collapse: "Collapse",
   switch_beneficiary: "Switch beneficiary",
   email_error: "Email format is incorrect",
+  vote_end: "End of voting",
+  discussion: "Discussion",
+  comment: "Comment",
+  enter_comment: "Enter your comment.",
+  comment_success: "Successfully commented",
+  comment_error: "Comment failed",
 }

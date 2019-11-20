@@ -184,4 +184,10 @@ module.exports = {
   collapse: "收起",
   switch_beneficiary: "切换受益人",
   email_error: "邮箱格式不正确",
+  vote_end: "投票结束",
+  discussion: "讨论区",
+  comment: "提交",
+  enter_comment: "填写评论",
+  comment_success: "评论成功",
+  comment_error: "评论失败",
 }

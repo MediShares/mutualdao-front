@@ -32,7 +32,6 @@ export default {
         ) {
           this.$router.go(0);
         }
-        $("#login").modal("hide");
       });
     }
   }

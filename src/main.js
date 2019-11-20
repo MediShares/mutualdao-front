@@ -15,9 +15,8 @@ import 'bootstrap/dist/css/bootstrap.min.css'
 import 'wc-messagebox/style.css'
 import Viewer from "v-viewer";
 import "viewerjs/dist/viewer.css";
-import { Alert, Confirm, Toast } from 'wc-messagebox'
+import { Confirm, Toast } from 'wc-messagebox'
 import 'static/css/index.css'
-Vue.use(Alert)
 Vue.use(Confirm)
 Vue.use(Toast)
 Vue.use(Viewer)
@@ -52,12 +51,13 @@ Vue.mixin({
     getAccount() {
       return new Promise((resolve, reject) => {
         sctuser.getAccount().then(res => {
+          $("#login").modal("hide");
           this.setAccount(res)
           resolve(res)
         }).catch(error => {
+          this.setLoading(false);
           this.$toast(this.$t("connect_scatter"), {
             duration: 2000,
-            location: "bottom"
           });
           reject('error:' + JSON.stringify(error));
         });

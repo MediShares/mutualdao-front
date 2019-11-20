@@ -112,12 +112,6 @@ export default {
           } else {
             this.projectAccount = "";
             this.projectTitle = "";
-            this.$alert({
-              content: this.$t("project_error"),
-              btnText: this.$t("confirm")
-            }).then(() => {
-              this.$router.push("/");
-            });
           }
         })
         .catch(err => {
@@ -203,6 +197,7 @@ export default {
           }
         } catch (e) {}
 
+        this.setLoading(true);
         const eos = this.sctuser.getEos();
         // 创建项目提交到链上
         eos
@@ -238,47 +233,37 @@ export default {
                   contentType: false
                 })
                 .then(res => {
+                  this.setLoading(false);
                   if (res.data.success) {
                     $("#successModal").modal("show");
                   } else {
-                    this.$alert({
-                      content: res.data.message,
-                      btnText: this.$t("confirm")
-                    });
+                    this.$toast(res.data.message);
                   }
                 })
                 .catch(error => {
                   // 失败
+                  this.setLoading(false);
                   console.log(error);
-                  this.$alert({
-                    content: this.$t("apply_error"),
-                    btnText: this.$t("confirm")
-                  });
+                  this.$toast(this.$t("apply_error"));
                 });
             },
             error => {
+              this.setLoading(false);
               if (JSON.parse(error)) {
                 let content = JSON.parse(error).error.details[0].message;
-                this.$alert({
-                  content: content.split(":")[1]
-                    ? content.split(":")[1]
-                    : content,
-                  btnText: this.$t("confirm")
-                });
+                content = content.split(":")[1]
+                  ? content.split(":")[1]
+                  : content;
+                this.$toast(content);
               } else {
-                this.$alert({
-                  content: this.$t("apply_error"),
-                  btnText: this.$t("confirm")
-                });
+                this.$toast(this.$t("apply_error"));
               }
             }
           )
           .catch(error => {
+            this.setLoading(false);
             console.log(error);
-            this.$alert({
-              content: this.$t("apply_error"),
-              btnText: this.$t("confirm")
-            });
+            this.$toast(this.$t("apply_error"));
           });
       });
     }

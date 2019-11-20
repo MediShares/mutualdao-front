@@ -351,7 +351,7 @@ export default {
             }
           }
         } catch (e) {}
-
+        this.setLoading(true);
         this.$http
           .post(this.domain + "apiDao/submitNewProject?v=1.0", formData, {
             cache: false,
@@ -359,22 +359,18 @@ export default {
             contentType: false
           })
           .then(res => {
+            this.setLoading(false);
             if (res.data.success) {
               this.projectID = res.data.data;
               $("#successModal").modal("show");
             } else {
-              this.$alert({
-                content: res.data.message,
-                btnText: this.$t("confirm")
-              });
+              this.$toast(res.data.message);
             }
           })
           .catch(error => {
+            this.setLoading(false);
             console.log(error);
-            this.$alert({
-              content: this.$t("release_error"),
-              btnText: this.$t("confirm")
-            });
+            this.$toast(this.$t("release_error"));
           });
       });
     },

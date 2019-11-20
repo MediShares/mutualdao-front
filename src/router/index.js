@@ -58,6 +58,15 @@ export default new Router({
       component: () =>
         import ('../components/project-applied')
     },
+    // 讨论区
+    {
+      path: '/discussion',
+      component: () =>
+        import ('../components/discussion'),
+      props: (route) => ({
+        id: route.query.id
+      })
+    },
   ],
   scrollBehavior(to, from, savedPosition) {
     return { x: 0, y: 0 }

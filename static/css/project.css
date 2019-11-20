@@ -120,7 +120,7 @@
 }
 
 .tab a {
-  color: var(--blueGrey);
+  color: rgba(96, 125, 139, 0.5);
   font: 500 20px/78px Gotham-Medium;
   display: inline-block;
   width: 30%;
@@ -240,20 +240,6 @@
   line-height: 28px;
 }
 
-.vote-info li {
-  color: var(--blueGrey);
-  line-height: 20px;
-  padding-left: 152px;
-  position: relative;
-  margin-top: 8px;
-}
-
-.label-name {
-  position: absolute;
-  left: 0;
-  top: 0;
-}
-
 .vote-select {
   float: left;
   width: 160px;
@@ -272,7 +258,7 @@
   opacity: 0.5;
 }
 
-.vote-info a[target] {
+.vote-info .discussion {
   text-decoration: underline;
   color: var(--blueGrey);
 }
@@ -334,7 +320,7 @@
   float: left;
   font: 500 20px/32px Gotham-Medium;
   user-select: none;
-  color: rgba(44, 54, 63, 0.24);
+  color: rgba(96, 125, 139, 0.5);
 }
 
 .history-tab a:last-child {
@@ -481,9 +467,6 @@
   }
   .claim-des.line-limit {
     max-height: 72px;
-  }
-  .vote-info li {
-    padding-left: 120px;
   }
   .vote-select {
     width: calc(100% - 60px);

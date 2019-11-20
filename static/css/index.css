@@ -102,11 +102,11 @@ ul {
 }
 
 .wc-toast .wc-toast-message {
-  padding: 24px!important;
-  padding-left: 60px!important;
-  font-size: 16px!important;
-  background: #303032 url(../img/icon/toast_warn.jpg)no-repeat 16px center/36px!important;
-  opacity: 1!important;
+  padding: 24px;
+  padding-left: 60px;
+  font-size: 16px;
+  background: #303032 url(../img/icon/toast_warn.jpg)no-repeat 16px center/36px;
+  opacity: 1;
 }
 
 .wc-popup-buttons {
@@ -494,6 +494,23 @@ span.basic-input {
 }
 
 
+/* 投票信息 */
+
+.vote-info li {
+  color: var(--blueGrey);
+  line-height: 20px;
+  padding-left: 152px;
+  position: relative;
+  margin-top: 8px;
+}
+
+.vote-info .label-name {
+  position: absolute;
+  left: 0;
+  top: 0;
+}
+
+
 /*小于768px屏幕 手机 xs*/
 
 @media (max-width: 767px) {
@@ -564,6 +581,9 @@ span.basic-input {
   .mds-title {
     font-size: 24px;
     margin-bottom: 32px;
+  }
+  .vote-info li {
+    padding-left: 120px;
   }
 }
 
