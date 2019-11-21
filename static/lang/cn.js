@@ -190,4 +190,5 @@ module.exports = {
   enter_comment: "填写评论",
   comment_success: "评论成功",
   comment_error: "评论失败",
+  to_view_others: "去查看其它项目",
 }

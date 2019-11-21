@@ -1,23 +1,23 @@
 <template>
   <div class="blank-page">
     <p>{{isApplied?$t("no_claim"):$t('no_project')}}</p>
-    <router-link v-if="!isApplied" to="/submitProject">{{$t("to_publish_projects")}}</router-link>
-    <router-link v-else to="submitClaim">{{$t("to_submit_claims")}}</router-link>
+    <router-link v-if="!isProject" to="/project">{{$t("to_view_others")}}</router-link>
   </div>
 </template>
 
 <script>
 export default {
-  props: ["isApplied"]
+  props: ["isApplied", "isProject"]
 };
 </script>
 
 <style>
 .blank-page {
-  margin: 80px 0 100px;
+  padding: 80px 0 100px;
   color: var(--blueGrey);
   font-size: 16px;
   text-align: center;
+  min-height: calc(100vh - 926px);
 }
 
 .blank-page > a {

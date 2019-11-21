@@ -190,4 +190,5 @@ module.exports = { 
   enter_comment: "Enter your comment.",
   comment_success: "Successfully commented",
   comment_error: "Comment failed",
+  to_view_others: "To view other projects",
 }

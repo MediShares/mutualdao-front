@@ -15,7 +15,7 @@
           ></project-list>
         </li>
       </ul>
-      <blank-page v-else></blank-page>
+      <blank-page :isProject="true" v-else></blank-page>
       <div v-if="projects&&projects.length>3&&isOver" class="bottom-line">
         <span>{{$t('bottom_line')}}</span>
       </div>
