@@ -30,6 +30,7 @@ import {
 Vue.mixin({
   data() {
     return {
+      BigNumber: bigNumber,
       tokenDecimals: 4, //代币精度
       sctuser: sctuser,
       webUtil: util,

@@ -210,8 +210,13 @@
                       </li>
                       <li>
                         <!-- 申请互助金额 -->
-                        <span class="label-name">{{$t('claim_amount')}}</span>
+                        <span class="label-name">{{$t('application_amount')}}</span>
                         <p>{{item.amount}} {{project.token}}</p>
+                      </li>
+                      <li v-if="item.status=='1'">
+                        <!-- 实际到账金额 -->
+                        <span class="label-name">{{$t('claim_amount')}}</span>
+                        <p>{{item.claim_amount?claim_amount:'--'}} {{project.token}}</p>
                       </li>
                       <li>
                         <!-- 申请时间 -->
@@ -286,6 +291,7 @@
                       class="exchange-input"
                       v-model="sellKeyNumber"
                       type="number"
+                      pattern="[0-9]*"
                       placeholder="10"
                       autocomplete="off"
                     />
@@ -300,7 +306,13 @@
                   <h4 class="info-title">{{$t('swap')}}</h4>
                   <ul class="exchange clearfix">
                     <li class="basic-group">
-                      <input type="number" v-model="swapNumber" placeholder="0" autocomplete="off" />
+                      <input
+                        type="number"
+                        pattern="[0-9]*"
+                        v-model="swapNumber"
+                        placeholder="0"
+                        autocomplete="off"
+                      />
                       <span class="target-token">{{swapFrom.name}}</span>
                       <p>{{$t('available')}} {{swapFrom.assets}} {{swapFrom.name}}</p>
                     </li>
@@ -314,7 +326,13 @@
                       />
                     </li>
                     <li class="basic-group">
-                      <input type="number" v-model="swapNumber" placeholder="0" disabled />
+                      <input
+                        type="number"
+                        pattern="[0-9]*"
+                        v-model="swapNumber"
+                        placeholder="0"
+                        disabled
+                      />
                       <span class="target-token">{{swapTo.name}}</span>
                     </li>
                   </ul>
@@ -511,6 +529,7 @@ export default {
     });
   },
   beforeDestroy() {
+    $(".header-nav").css("top", "0px");
     if (this.outdateInterval) {
       clearInterval(this.outdateInterval); //关闭
     }
@@ -598,7 +617,7 @@ export default {
         .multipliedBy(this.project.dividendPercent)
         .div(100)
         .div(this.keyPrice)
-        .toFixed(0);
+        .toFixed(0, this.BigNumber.ROUND_FLOOR);
       return keyNumber;
     },
     init() {
@@ -1110,13 +1129,15 @@ export default {
           })
           .then(
             res => {
+              // 将数据提交到数据库
               this.$http
                 .post(
                   this.domain + "apiDao/caseExecute?v=1.0",
                   {
                     id: item.ID, //数据库ID
                     agree: item.vote_yes, //赞同票数
-                    disagree: item.vote_no //反对票数
+                    disagree: item.vote_no, //反对票数
+                    case_id: item.case_id
                   },
                   {
                     emulateJSON: true

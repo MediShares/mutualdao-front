@@ -198,7 +198,7 @@
       </div>
     </div>
     <!-- Modal -->
-    <successModal :title="$t('apply_success')" :link="'/projectDetail?id='+this.projectID" />
+    <successModal :title="$t('release_success')" :link="'/projectDetail?id='+projectID" />
 
     <div class="modal" id="rule">
       <div class="modal-dialog" role="document">
@@ -304,9 +304,10 @@ export default {
           return false;
         }
         if (
-          parseFloat(this.mutualPercent - 0) +
-            parseFloat(this.dividendPercent - 0) +
-            parseFloat(this.referralRatio - 0) !=
+          this.mutualPercent -
+            0 +
+            (this.dividendPercent - 0) +
+            (this.referralRatio - 0) !=
           100
         ) {
           this.$toast(this.$t("percent_limit"));

@@ -46,6 +46,7 @@ module.exports = {
   submit_new_claim: "申请互助",
   status: "状态",
   claim_amount: "互助金额",
+  application_amount: "申请金额",
   claim_time: "申请时间",
   voting_endtime: "投票结束时间",
   voting: "投票中",

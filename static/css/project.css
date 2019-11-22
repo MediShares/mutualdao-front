@@ -216,11 +216,24 @@
   font-size: 20px;
   line-height: 28px;
   position: relative;
+  overflow: hidden;
 }
 
 .claim-des.line-limit {
-  overflow: hidden;
   max-height: 84px;
+}
+
+.claim-text {
+  word-break: break-word;
+}
+
+.read-more,
+.collapse-more {
+  color: var(--darkColor)!important;
+  background: var(--bgColor);
+  font-size: 14px;
+  line-height: 28px;
+  cursor: pointer;
 }
 
 .read-more {
@@ -228,16 +241,10 @@
   padding-left: 4px;
   right: 0;
   bottom: 0;
-  color: var(--darkColor)!important;
-  background: var(--bgColor);
 }
 
 .collapse-more {
-  color: var(--darkColor)!important;
   text-align: right;
-  cursor: pointer;
-  font-size: 20px;
-  line-height: 28px;
 }
 
 .vote-select {

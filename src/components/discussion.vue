@@ -23,7 +23,7 @@
             </li>
             <li>
               <!-- 申请互助金额 -->
-              <span class="label-name">{{$t('claim_amount')}}</span>
+              <span class="label-name">{{$t('application_amount')}}</span>
               <p>{{claim.amount}} {{claim.token}}</p>
             </li>
             <li>
@@ -50,11 +50,14 @@
           <!-- 评论信息 -->
           <ul class="comment-info" v-if="comments&&comments.length>0">
             <li v-for="item in comments" :key="item.ID">
-              <h4>{{item.proposer}}</h4>
-              <p>{{item.info}}</p>
+              <h4>{{item.user}}</h4>
+              <p>{{item.content}}</p>
               <time>{{item.createDate}}</time>
             </li>
           </ul>
+          <div v-if="comments&&comments.length>0&&isOver" class="bottom-line">
+            <span>{{$t('bottom_line')}}</span>
+          </div>
         </div>
       </div>
     </article>
@@ -74,7 +77,10 @@ export default {
       // 评论列表
       comments: null,
       // 评论区提交内容
-      comment: ""
+      comment: "",
+      // 获取评论数翻页
+      page: 1,
+      isOver: false
     };
   },
   computed: {
@@ -97,15 +103,12 @@ export default {
   methods: {
     getCase() {
       this.$http
-        .get(this.domain + "apiDao/?v=1.0&id=" + this.id)
+        .get(this.domain + "apiDao/getCaseInfo?v=1.0&id=" + this.id)
         .then(res => {
           this.setLoading(false);
+          // res.data = JSON.parse(res.data);
           if (res.data.success) {
-            if (res.data.data && res.data.data.length > 0) {
-              this.claim = res.data.data[0];
-            } else {
-              this.claim = null;
-            }
+            this.claim = res.data.data;
           }
         })
         .catch(err => {
@@ -114,22 +117,88 @@ export default {
         });
     },
     getComments() {
+      // 设置一个开关来避免重复请求数据
+      let sw = false;
+      this.setLoading(true);
       this.$http
-        .get(this.domain + "apiDao/?v=1.0&id=" + this.id)
+        .get(
+          this.domain +
+            "apiDao/getCommentList?v=1.0&id=" +
+            this.id +
+            "&page=" +
+            this.page
+        )
         .then(res => {
           this.setLoading(false);
           if (res.data.success) {
-            if (res.data.data && res.data.data.length > 0) {
-              this.comments = res.data.data;
+            // 将得到的数据放到vue中的data
+            this.comments = res.data.data.data;
+
+            if (this.comments && this.comments.length < 9) {
+              // 全部已加载
+              this.isOver = true;
+              sw = false;
             } else {
-              this.comments = null;
+              sw = true;
             }
+          } else {
+            this.comments = null;
+            this.isOver = true;
+            sw = false;
           }
         })
         .catch(err => {
-          console.log(err);
           this.setLoading(false);
+          console.log(err);
         });
+
+      // 注册scroll事件并监听
+      $(window).scroll(() => {
+        // 判断是否打开开关
+        if (sw == true) {
+          // 判断是否滚动到底部
+          if (
+            $(window).scrollTop() + $(window).height() >=
+            $("#app").outerHeight(true)
+          ) {
+            this.setLoading(true);
+            this.page++;
+            // 将开关关闭
+            sw = false;
+            this.$http
+              .get(
+                this.domain +
+                  "apiDao/getCommentList?v=1.0&id=" +
+                  this.id +
+                  "&page=" +
+                  this.page
+              )
+              .then(res => {
+                this.setLoading(false);
+                if (res.data.success) {
+                  // 将新获取的数据push到vue中的data，就会反应到视图中了
+                  this.comments = this.comments.concat(res.data.data.data);
+                  // 数据更新完毕，将开关打开
+                  if (res.data.data.data.length < 9) {
+                    // 全部已加载
+                    this.isOver = true;
+                    sw = false;
+                  } else {
+                    sw = true;
+                  }
+                } else {
+                  // 全部已加载
+                  this.isOver = true;
+                  sw = false;
+                }
+              })
+              .catch(err => {
+                this.setLoading(false);
+                console.log(err);
+              });
+          }
+        }
+      });
     },
     submitComment() {
       this.setLoading(true);
@@ -140,10 +209,12 @@ export default {
         }
         this.$http
           .post(
-            this.domain + "",
+            this.domain + "apiDao/submitComment?v=1.0",
             {
-              comment: this.comment,
-              proposer: account.name
+              content: this.comment,
+              user: account.name,
+              caseID: this.claim.ID,
+              projectID: this.claim.projectID
             },
             {
               emulateJSON: true
@@ -209,15 +280,11 @@ h4 {
   font-size: 16px;
   line-height: 24px;
   margin-top: 24px;
-  border-bottom: 1px solid var(--very-light-blue);
 }
 .comment-info li {
-  padding: 24px 0 24px 56px;
+  padding: 32px 0 24px 56px;
   border-top: 1px solid var(--very-light-blue);
-  background: url(../../static/img/icon/web_icon_ID.png) no-repeat left 24px/48px;
-}
-.comment-info h4 {
-  padding: 8px 0;
+  background: url(../../static/img/icon/web_icon_ID.png) no-repeat left 20px/48px;
 }
 .comment-info time {
   font-size: 14px;
@@ -242,5 +309,19 @@ h4 {
   line-height: 18px;
   cursor: pointer;
   display: inline-block;
+}
+@media (max-width: 767px) {
+  .project-title {
+    font-size: 26px;
+    padding-top: 0;
+  }
+  .basic-input {
+    margin-top: 24px;
+  }
+  .comment {
+    padding-bottom: 10px;
+  }
+  .comment-info {
+  }
 }
 </style>

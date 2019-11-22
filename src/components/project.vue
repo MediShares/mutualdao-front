@@ -53,8 +53,8 @@ export default {
             // 将得到的数据放到vue中的data
             this.projects = res.data.data.data;
 
-            if (res.data.data.data.length < 9) {
-              // 如果显示全部已加载则放开此注释
+            if (this.projects && this.projects.length < 9) {
+              // 全部已加载
               this.isOver = true;
               sw = false;
             } else {
@@ -88,7 +88,7 @@ export default {
                 this.projects = this.projects.concat(res.data.data.data);
                 // 数据更新完毕，将开关打开
                 if (res.data.data.data.length < 9) {
-                  // 如果显示全部已加载则放开此注释
+                  // 全部已加载
                   this.isOver = true;
                   sw = false;
                 } else {

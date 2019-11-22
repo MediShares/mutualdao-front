@@ -46,6 +46,7 @@ module.exports = {
   submit_new_claim: "Submit New Claim",
   status: "Status",
   claim_amount: "Claim Amount",
+  application_amount: "Application Amount",
   claim_time: "Claim Time",
   voting_endtime: "Voting Endtime",
   voting: "Voting",

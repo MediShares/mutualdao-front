@@ -13,10 +13,9 @@ export default {
   created() {
     this.$router.afterEach((to, from) => {
       if (
-        to.path == "/" ||
-        to.path == "/submitProject" ||
-        to.path == "/submitClaim" ||
-        to.path == "/projectDetail"
+        to.path != "/myProject" &&
+        to.path != "/projectJoined" &&
+        to.path != "/projectApplied"
       ) {
         this.loginByScatter();
       }

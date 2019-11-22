@@ -65,7 +65,7 @@
         </div>
       </div>
     </div>
-    <successModal :title="$t('apply_success')" :link="'/projectDetail?id='+this.id" />
+    <successModal :title="$t('apply_success')" :link="'/projectDetail?id='+id" />
     <div class="modal" id="rule">
       <div class="modal-dialog" role="document">
         <div class="modal-content">

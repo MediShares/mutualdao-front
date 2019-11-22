@@ -85,6 +85,20 @@ input[type=radio] {
   outline: none;
 }
 
+input:disabled,
+input[disabled] {
+  -webkit-text-fill-color: #2c363f;
+  opacity: 1;
+}
+
+input[disabled]::placeholder {
+  -webkit-text-fill-color: darkgray;
+}
+
+button {
+  background: transparent;
+}
+
 ul {
   padding: 0;
   list-style: none;
@@ -499,7 +513,7 @@ span.basic-input {
 .vote-info li {
   color: var(--blueGrey);
   line-height: 20px;
-  padding-left: 152px;
+  padding-left: 166px;
   position: relative;
   margin-top: 8px;
 }
@@ -583,7 +597,7 @@ span.basic-input {
     margin-bottom: 32px;
   }
   .vote-info li {
-    padding-left: 120px;
+    padding-left: 140px;
   }
 }
 
