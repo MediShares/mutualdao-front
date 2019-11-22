@@ -141,6 +141,7 @@ module.exports = { 
   to_submit_claims: "클레임 제출",
   connect_scatter: "먼저 scatter를 연결하십시오",
   effectivity: "효과",
+  exited: "Exited",
   waiting_period: "대기 기간(예: %d일 후)",
   my: "나의",
   unable_submit_claim: " %d일 대기 기간이 남아 있으므로 %d일 후에 새 청구서를 제출할 수 있습니다.",

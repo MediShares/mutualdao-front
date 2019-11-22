@@ -45,10 +45,12 @@
           <section class="col-sm-4">
             <article class="user-info" v-if="user">
               <template v-if="permission">
-                <!-- 生效中 -->
-                <p class="effect" v-if="remaining<=0">{{$t('effectivity')}}</p>
-                <!-- 等待期 -->
-                <p class="wait" v-else>{{$t('waiting_period').replace('%d',remaining)}}</p>
+                <!-- 状态 -->
+                <p class="wait" v-if="user.aidBalance<=0">{{$t('exited')}}</p>
+                <p
+                  v-else
+                  :class="[{'main-color':remaining<=0},'wait']"
+                >{{remaining>0?$t('waiting_period').replace('%d',remaining):$t('effectivity')}}</p>
               </template>
               <h4 class="pro-value">{{user.aidBalance}}</h4>
               <p class="pro-key">{{$t("mutual_aid_balance")}} ({{project.token}})</p>
@@ -147,7 +149,7 @@
               </section>
               <!-- 互助公示 -->
               <section class="claims" v-show="activeTab=='claims'">
-                <!-- 登录且加入该项目并且过了等待期才能申请互助 -->
+                <!-- 登录且加入该项目显示此项，但是过了等待期才能申请互助 -->
                 <div class="submit-claim" v-if="account&&permission">
                   <p class="btn copy-btn" @click="submitClaim">{{$t('submit_new_claim')}}</p>
                 </div>
@@ -216,7 +218,7 @@
                       <li v-if="item.status=='1'">
                         <!-- 实际到账金额 -->
                         <span class="label-name">{{$t('claim_amount')}}</span>
-                        <p>{{item.claim_amount?claim_amount:'--'}} {{project.token}}</p>
+                        <p>{{item.actualAmount?item.actualAmount:'--'}} {{project.token}}</p>
                       </li>
                       <li>
                         <!-- 申请时间 -->
@@ -366,9 +368,9 @@
                   <li v-show="activeHistory=='aid'">
                     <ul v-if="aidHistory&&aidHistory.length>0">
                       <li class="history-info" v-for="item in aidHistory" :key="item.ID">
-                        <span class="pull-right">- {{item.amount}} {{item.token}}</span>
-                        <p class="address">{{item.proposer}}</p>
-                        <time class="history-time">{{item.createDate}}</time>
+                        <span class="pull-right">- {{item.quantity}} {{item.token}}</span>
+                        <p class="address">{{item.from}}</p>
+                        <time class="history-time">{{item.time}}</time>
                       </li>
                     </ul>
                     <p v-else class="no-info">{{$t('no_aid_history')}}</p>
@@ -433,14 +435,14 @@ export default {
         title: "loading",
         introduce: "loading",
         img: "",
-        mutualPercent: "loading",
-        dividendPercent: "loading",
-        referralRatio: "loading",
+        mutualPercent: "0",
+        dividendPercent: "0",
+        referralRatio: "0",
         token: "loading",
-        low: "loading",
-        high: "loading",
-        window: "loading",
-        waitingPeriod: "loading",
+        low: "0",
+        high: "0",
+        window: "0",
+        waitingPeriod: "0",
         targetAccount: "loading",
         createDate: "loading"
       }, //项目详情
@@ -480,7 +482,8 @@ export default {
       // 交易成功弹窗
       successModalTitle: "",
       successModalInfo: null,
-      outdateInterval: null //投票状态定时器
+      outdateInterval: null, //投票状态定时器
+      sharer: "" //分享人
     };
   },
   computed: {
@@ -501,6 +504,8 @@ export default {
     }
   },
   created() {
+    // 获取分享人
+    this.sharer = this.webUtil.getQueryString("from");
     this.activeTab =
       this.tab && this.tabs.includes(this.tab) ? this.tab : "details";
     // 初始化
@@ -605,7 +610,7 @@ export default {
         Date.now() - new Date(item.endTime.replace(/\-/g, "/")) >= 0;
 
       if (isOutdate) {
-        status = item.vote_yes > item.vote_no ? "pending" : "refused";
+        status = item.vote_yes - 0 > item.vote_no ? "pending" : "refused";
       }
 
       return status;
@@ -613,11 +618,22 @@ export default {
     // 加入弹窗key与EOS比例
     joinKeyNumber(amount) {
       let assets = amount ? amount : 0;
+      let dividendPercent = this.project.dividendPercent;
+      // 如果没有分享人并且他的分享奖励大于0则将分享奖励按比例进入保障池和治理池
+      if (!this.sharer && this.project.referralRatio > 0) {
+        dividendPercent = this.bigNumber(dividendPercent)
+          .div(100 - this.project.referralRatio)
+          .multipliedBy(this.project.referralRatio)
+          .plus(dividendPercent)
+          .toNumber();
+      }
+
       let keyNumber = this.bigNumber(assets)
-        .multipliedBy(this.project.dividendPercent)
+        .multipliedBy(dividendPercent)
         .div(100)
         .div(this.keyPrice)
         .toFixed(0, this.BigNumber.ROUND_FLOOR);
+
       return keyNumber;
     },
     init() {
@@ -791,12 +807,7 @@ export default {
                             this.user.vote_list &&
                             this.user.vote_list.length > 0
                           ) {
-                            for (
-                              let u = 0;
-                              u < this.user.vote_list.length;
-                              u++
-                            ) {
-                              let user = this.user.vote_list[u];
+                            this.user.vote_list.map(user => {
                               if (user.case_id == this.claimsList[j].case_id) {
                                 if (user.agreed) {
                                   this.$set(
@@ -812,7 +823,7 @@ export default {
                                   );
                                 }
                               }
-                            }
+                            });
                           }
                         }
                       }
@@ -932,8 +943,8 @@ export default {
               this.setLoading(false);
               if (JSON.parse(error)) {
                 let content = JSON.parse(error).error.details[0].message;
-                content = content.split(":")[1]
-                  ? content.split(":")[1]
+                content = content.split("message:")[1]
+                  ? content.split("message:")[1]
                   : content;
                 this.$toast(content);
               } else {
@@ -982,22 +993,36 @@ export default {
               }
             ]
           })
-          .then(res => {
-            this.setLoading(false);
-            this.successModalTitle = "vote_success";
-            $("#successModal").modal("show");
-            let _this = this;
-            $("#successModal").on("hidden.bs.modal", function(e) {
-              _this.$router.push({
-                path: "/projectDetail",
-                query: {
-                  id: _this.id,
-                  tab: "claims"
-                }
+          .then(
+            res => {
+              this.setLoading(false);
+              this.successModalTitle = "vote_success";
+              $("#successModal").modal("show");
+              let _this = this;
+              $("#successModal").on("hidden.bs.modal", function(e) {
+                _this.$router.push({
+                  path: "/projectDetail",
+                  query: {
+                    id: _this.id,
+                    tab: "claims"
+                  }
+                });
+                window.location.reload();
               });
-              window.location.reload();
-            });
-          })
+            },
+            error => {
+              this.setLoading(false);
+              if (JSON.parse(error)) {
+                let content = JSON.parse(error).error.details[0].message;
+                content = content.split("message:")[1]
+                  ? content.split("message:")[1]
+                  : content;
+                this.$toast(content);
+              } else {
+                this.$toast(this.$t("vote_error"));
+              }
+            }
+          )
           .catch(error => {
             // 失败
             this.setLoading(false);
@@ -1030,22 +1055,37 @@ export default {
               }
             ]
           })
-          .then(res => {
-            this.setLoading(false);
-            this.successModalTitle = "cancelvote_success";
-            $("#successModal").modal("show");
-            let _this = this;
-            $("#successModal").on("hidden.bs.modal", function(e) {
-              _this.$router.push({
-                path: "/projectDetail",
-                query: {
-                  id: _this.id,
-                  tab: "claims"
-                }
+          .then(
+            res => {
+              this.setLoading(false);
+              this.successModalTitle = "cancelvote_success";
+              $("#successModal").modal("show");
+              let _this = this;
+              $("#successModal").on("hidden.bs.modal", function(e) {
+                _this.$router.push({
+                  path: "/projectDetail",
+                  query: {
+                    id: _this.id,
+                    tab: "claims"
+                  }
+                });
+                window.location.reload();
               });
-              window.location.reload();
-            });
-          })
+            },
+            error => {
+              this.setLoading(false);
+              // 失败
+              if (JSON.parse(error)) {
+                let content = JSON.parse(error).error.details[0].message;
+                content = content.split("message:")[1]
+                  ? content.split("message:")[1]
+                  : content;
+                this.$toast(content);
+              } else {
+                this.$toast(this.$t("exec_error"));
+              }
+            }
+          )
           .catch(error => {
             // 失败
             this.setLoading(false);
@@ -1078,22 +1118,37 @@ export default {
               }
             ]
           })
-          .then(res => {
-            this.setLoading(false);
-            this.successModalTitle = "cancelvote_success";
-            $("#successModal").modal("show");
-            let _this = this;
-            $("#successModal").on("hidden.bs.modal", function(e) {
-              _this.$router.push({
-                path: "/projectDetail",
-                query: {
-                  id: _this.id,
-                  tab: "claims"
-                }
+          .then(
+            res => {
+              this.setLoading(false);
+              this.successModalTitle = "cancelvote_success";
+              $("#successModal").modal("show");
+              let _this = this;
+              $("#successModal").on("hidden.bs.modal", function(e) {
+                _this.$router.push({
+                  path: "/projectDetail",
+                  query: {
+                    id: _this.id,
+                    tab: "claims"
+                  }
+                });
+                window.location.reload();
               });
-              window.location.reload();
-            });
-          })
+            },
+            error => {
+              this.setLoading(false);
+              // 失败
+              if (JSON.parse(error)) {
+                let content = JSON.parse(error).error.details[0].message;
+                content = content.split("message:")[1]
+                  ? content.split("message:")[1]
+                  : content;
+                this.$toast(content);
+              } else {
+                this.$toast(this.$t("exec_error"));
+              }
+            }
+          )
           .catch(error => {
             // 失败
             this.setLoading(false);
@@ -1135,8 +1190,6 @@ export default {
                   this.domain + "apiDao/caseExecute?v=1.0",
                   {
                     id: item.ID, //数据库ID
-                    agree: item.vote_yes, //赞同票数
-                    disagree: item.vote_no, //反对票数
                     case_id: item.case_id
                   },
                   {
@@ -1147,6 +1200,12 @@ export default {
                   this.setLoading(false);
                   if (result.data.success) {
                     this.successModalTitle = "exec_success";
+                    this.successModalInfo =
+                      this.$t("claim_amount") +
+                      "：" +
+                      result.data.data.transfer_fund +
+                      " " +
+                      this.project.token;
                     $("#successModal").modal("show");
                     let _this = this;
                     $("#successModal").on("hidden.bs.modal", function(e) {
@@ -1174,8 +1233,8 @@ export default {
               // 失败
               if (JSON.parse(error)) {
                 let content = JSON.parse(error).error.details[0].message;
-                content = content.split(":")[1]
-                  ? content.split(":")[1]
+                content = content.split("message:")[1]
+                  ? content.split("message:")[1]
                   : content;
                 this.$toast(content);
               } else {
@@ -1200,7 +1259,7 @@ export default {
           return false;
         }
         // 可用余额不足
-        if (!this.user || this.sellKeyNumber > this.user.Key) {
+        if (!this.user || this.sellKeyNumber - 0 > this.user.Key) {
           this.$toast(this.$t("more_available"));
           return false;
         }
@@ -1257,8 +1316,8 @@ export default {
               // 失败
               if (JSON.parse(error)) {
                 let content = JSON.parse(error).error.details[0].message;
-                content = content.split(":")[1]
-                  ? content.split(":")[1]
+                content = content.split("message:")[1]
+                  ? content.split("message:")[1]
                   : content;
                 this.$toast(content);
               } else {
@@ -1290,7 +1349,7 @@ export default {
           return false;
         }
         // 可用余额不足
-        if (this.swapNumber > this.swapFrom.assets) {
+        if (this.swapNumber - 0 > this.swapFrom.assets) {
           this.$toast(this.$t("more_available"));
           return false;
         }
@@ -1323,25 +1382,45 @@ export default {
               }
             ]
           })
-          .then(res => {
-            this.setLoading(false);
-            this.successModalTitle = "swap_success";
-            this.successModalInfo = this.swapNumber + " " + this.swapFrom.name;
-            " = " + this.swapNumber;
-            " " + this.swapTo.name;
-            $("#successModal").modal("show");
-            let _this = this;
-            $("#successModal").on("hidden.bs.modal", function(e) {
-              _this.$router.push({
-                path: "/projectDetail",
-                query: {
-                  id: _this.id,
-                  tab: "trade"
-                }
+          .then(
+            res => {
+              this.setLoading(false);
+              this.successModalTitle = "swap_success";
+              this.successModalInfo =
+                this.swapNumber +
+                " " +
+                this.swapFrom.name +
+                " = " +
+                this.swapNumber +
+                " " +
+                this.swapTo.name;
+              $("#successModal").modal("show");
+              let _this = this;
+              $("#successModal").on("hidden.bs.modal", function(e) {
+                _this.$router.push({
+                  path: "/projectDetail",
+                  query: {
+                    id: _this.id,
+                    tab: "trade"
+                  }
+                });
+                window.location.reload();
               });
-              window.location.reload();
-            });
-          })
+            },
+            error => {
+              this.setLoading(false);
+              // 失败
+              if (JSON.parse(error)) {
+                let content = JSON.parse(error).error.details[0].message;
+                content = content.split("message:")[1]
+                  ? content.split("message:")[1]
+                  : content;
+                this.$toast(content, { duration: 3000 });
+              } else {
+                this.$toast(this.$t("exec_error"));
+              }
+            }
+          )
           .catch(error => {
             // 失败
             this.setLoading(false);
@@ -1358,9 +1437,6 @@ export default {
     },
     // 点击弹窗加入
     joinConfirm() {
-      // 获取分享人
-      let sharer = this.webUtil.getQueryString("from");
-
       // 登录
       this.getAccount().then(account => {
         // 判断金额
@@ -1372,7 +1448,7 @@ export default {
 
         // 找出项目的最小限额和实际最少限额中的较大值设为加入项目最小额度
         let lowLimit =
-          eosNumber > this.project.low ? eosNumber : this.project.low;
+          eosNumber - 0 > this.project.low ? eosNumber : this.project.low;
 
         // 加入金额小于最低限额则不可加入
         if (this.join.amount - 0 < lowLimit) {
@@ -1413,11 +1489,11 @@ export default {
                     parseFloat(this.join.amount).toFixed(4) +
                     " " +
                     this.project.token,
-                  memo: sharer
+                  memo: this.sharer
                     ? '"buyfor":"' +
                       this.join.account +
                       '","ref":"' +
-                      sharer +
+                      this.sharer +
                       '"'
                     : '"buyfor":"' + this.join.account + '"'
                 }
@@ -1437,7 +1513,7 @@ export default {
                     amount: this.join.amount,
                     buyer: this.account.name,
                     targetAccount: this.project.targetAccount,
-                    memo: sharer
+                    memo: this.sharer
                   },
                   { emulateJSON: true }
                 )
@@ -1466,8 +1542,8 @@ export default {
             error => {
               if (JSON.parse(error)) {
                 let content = JSON.parse(error).error.details[0].message;
-                content = content.split(":")[1]
-                  ? content.split(":")[1]
+                content = content.split("message:")[1]
+                  ? content.split("message:")[1]
                   : content;
                 this.$toast(content);
               } else {

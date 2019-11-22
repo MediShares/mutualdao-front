@@ -65,7 +65,7 @@
         </div>
       </div>
     </div>
-    <successModal :title="$t('apply_success')" :link="'/projectDetail?id='+id" />
+    <successModal :title="$t('apply_success')" :link="'/projectDetail?id='+id+'&tab=claims'" />
     <div class="modal" id="rule">
       <div class="modal-dialog" role="document">
         <div class="modal-content">
@@ -237,7 +237,9 @@ export default {
                   if (res.data.success) {
                     $("#successModal").modal("show");
                   } else {
-                    this.$toast(res.data.message);
+                    this.$toast(res.data.message, {
+                      duration: 4000
+                    });
                   }
                 })
                 .catch(error => {
@@ -254,7 +256,9 @@ export default {
                 content = content.split(":")[1]
                   ? content.split(":")[1]
                   : content;
-                this.$toast(content);
+                this.$toast(content, {
+                  duration: 4000
+                });
               } else {
                 this.$toast(this.$t("apply_error"));
               }

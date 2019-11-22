@@ -141,6 +141,7 @@ module.exports = {
   to_submit_claims: "To Submit Claims",
   connect_scatter: "Please connect scatter first",
   effectivity: "Effectivity",
+  exited: "Exited",
   waiting_period: "Waiting period (%d days to go)",
   my: "My",
   unable_submit_claim: "There are still %d days waiting period, you can submit new claim after %d days.",

@@ -321,7 +321,5 @@ h4 {
   .comment {
     padding-bottom: 10px;
   }
-  .comment-info {
-  }
 }
 </style>

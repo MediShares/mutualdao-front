@@ -12,7 +12,7 @@
     <div class="info">
       <h4 style="-webkit-box-orient: vertical">{{title}}</h4>
       <p class="pool">{{$t('mutual_aid_pool')}}:</p>
-      <div class="pool-amount">{{amount?amount:0}} {{token?token:'EOS'}}</div>
+      <div class="pool-amount">{{amount?amount:'0 EOS'}}</div>
       <div class="people">{{$t('people')}}: {{people?people:0}}</div>
     </div>
   </router-link>
@@ -20,7 +20,38 @@
 
 <script>
 export default {
-  props: ["picture", "people", "amount", "id", "token", "introduce", "title"]
+  props: ["picture", "id", "title", "targetAccount"],
+  data() {
+    return {
+      people: 0,
+      amount: "0 EOS"
+    };
+  },
+  created() {
+    this.getProjectInfo();
+  },
+  methods: {
+    getProjectInfo() {
+      // 从链上查项目详情
+      this.$http
+        .post(this.table_url, {
+          json: true,
+          code: this.targetAccount, //项目合约账户
+          scope: this.targetAccount, //项目合约账户
+          table: "global"
+        })
+        .then(result => {
+          let pool = result.data.rows[0];
+          if (pool) {
+            this.people = pool.guaranteed_accounts;
+            this.amount = pool.guarantee_pool;
+          }
+        })
+        .catch(err => {
+          console.log(err);
+        });
+    }
+  }
 };
 </script>
 

@@ -141,6 +141,7 @@ module.exports = {
   to_submit_claims: "现在去申请互助",
   connect_scatter: "请先连接scatter插件",
   effectivity: "权益生效中",
+  exited: "已退出",
   waiting_period: "等待期 (剩余%d天)",
   my: "我的",
   unable_submit_claim: "还剩余%d天的等待期，您可以在%d天后申请互助",

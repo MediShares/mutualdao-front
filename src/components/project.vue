@@ -8,10 +8,7 @@
             :id="item.ID"
             :picture="item.img"
             :title="item.title"
-            :introduce="item.introduce"
-            :people="item.joinPersons"
-            :amount="item.joinAmount"
-            :token="item.token"
+            :targetAccount="item.targetAccount"
           ></project-list>
         </li>
       </ul>

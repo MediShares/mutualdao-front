@@ -236,7 +236,7 @@ export default {
       window: "", //【 投票窗口期 】
       waitingPeriod: "", //【 等待期 】
       decimal: "4", //【 精度，非必须 】
-      targetAccount: "mdsdaotest13", //【 合约名，非必须 】
+      targetAccount: "mdsdaotest21", //【 合约名，非必须 】
       email: "" //【 邮箱，非必须 】
     };
   },
@@ -365,7 +365,9 @@ export default {
               this.projectID = res.data.data;
               $("#successModal").modal("show");
             } else {
-              this.$toast(res.data.message);
+              this.$toast(res.data.message, {
+                duration: 4000
+              });
             }
           })
           .catch(error => {
