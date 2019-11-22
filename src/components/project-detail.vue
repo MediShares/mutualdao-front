@@ -1513,6 +1513,10 @@ export default {
                     amount: this.join.amount,
                     buyer: this.account.name,
                     targetAccount: this.project.targetAccount,
+                    balance:
+                      this.user && this.user.aidBalance
+                        ? this.user.aidBalance
+                        : 0,
                     memo: this.sharer
                   },
                   { emulateJSON: true }
