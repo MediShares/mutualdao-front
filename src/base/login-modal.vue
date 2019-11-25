@@ -8,13 +8,13 @@
         <h4 class="modal-title">{{$t("log_mds")}}</h4>
         <div class="btn" @click="loginByScatter">{{$t("log_scatter")}}</div>
         <div class="loginInfo">{{$t("log_scatter_tip")}}</div>
-        <p class="no-scatter">
+        <!-- <p class="no-scatter">
           {{$t("log_no_scatter")}}
           <a
             href="https://get-scatter.com/"
             target="_blank"
           >{{$t("download_here")}}</a>
-        </p>
+        </p>-->
       </div>
     </div>
   </div>

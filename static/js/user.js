@@ -2,18 +2,12 @@ import Eos from 'eosjs'
 
 class User {
   constructor() {
-    this.network = process.env.NODE_ENV == 'development' ? {
+    this.network = {
         blockchain: 'eos',
         protocol: 'https',
         host: 'api-kylin.eosasia.one',
         port: '',
         chainId: '5fff1dae8dc8e2fc4d5b23b2c7665c97f9e9d8edf2b6485a86ba311c25639191',
-      } : {
-        blockchain: 'eos',
-        protocol: 'https',
-        host: 'eosmainnet.medishares.net',
-        port: 443,
-        chainId: 'aca376f206b8fc25a6ed44dbdc66547c36c6c33e3a119ffbeaef943642f0e906',
       },
       this.account = null
   }

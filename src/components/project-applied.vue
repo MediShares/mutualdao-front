@@ -44,6 +44,10 @@ export default {
           .then(result => {
             this.setLoading(false);
             this.projects = result.data.data;
+          })
+          .catch(err => {
+            console.log(err);
+            this.setLoading(false);
           });
       });
     },

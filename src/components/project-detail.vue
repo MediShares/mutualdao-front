@@ -737,6 +737,10 @@ export default {
           } else {
             this.isNull = true;
           }
+        })
+        .catch(err => {
+          console.log(err);
+          this.setLoading(false);
         });
     },
     // 获取互助公示列表
@@ -1607,5 +1611,525 @@ export default {
 };
 </script>
 <style scoped>
-@import "../../static/css/project.css";
+.project-detail {
+  padding: 68px 0 0;
+}
+
+.project-detail .title {
+  padding-bottom: 32px;
+  line-height: 1;
+  text-align: left;
+}
+
+.release-info {
+  padding-bottom: 32px;
+}
+
+.release-info span {
+  margin-right: 46px;
+}
+
+.project-detail .pic {
+  width: 100%;
+  height: 390px;
+  border-radius: 4px 4px 0 0;
+}
+
+.program-info {
+  background: #fff;
+  padding: 24px 32px 0;
+  border-radius: 0 0 4px 4px;
+}
+
+.program-info li {
+  float: left;
+  width: 50%;
+}
+
+.wait,
+.effect {
+  font: 500 14px/16px Gotham-Medium;
+  margin-bottom: 32px;
+}
+
+.effect {
+  color: var(--primaryColor);
+}
+
+.wait {
+  color: var(--blueGrey);
+}
+
+.pro-value {
+  font: 500 24px/28px Gotham-Medium;
+  margin: 8px 0;
+}
+
+.pro-key {
+  margin-bottom: 32px;
+}
+
+.supportBtn {
+  margin-top: 16px;
+}
+
+.user-info + .supportBtn {
+  margin: 0;
+}
+
+.copy-btn {
+  display: block;
+  text-align: center;
+  background: transparent;
+  border: 1px solid var(--primaryColor);
+  color: var(--primaryColor);
+  margin-top: 16px;
+}
+
+.share-btn {
+  padding: 8px;
+  border-radius: 4px;
+  font: 500 14px/20px Gotham-Medium;
+}
+
+.copy-btn:hover {
+  color: var(--primaryColor);
+}
+
+.share-btn i {
+  display: block;
+  font-size: 12px;
+  line-height: 1;
+}
+
+.unJoin {
+  opacity: 0.5;
+}
+
+.detail-info {
+  background: #fff;
+  margin-top: 64px;
+}
+
+/* tab */
+
+.tab {
+  border-bottom: 1px solid var(--very-light-blue);
+  overflow: hidden;
+}
+
+.detail-info.fixed {
+  padding-top: 80px;
+}
+
+.detail-info.fixed .tab {
+  position: fixed;
+  left: 0;
+  right: 0;
+  top: 0;
+  z-index: 1030;
+  background: #fff;
+}
+
+.tab a {
+  color: rgba(96, 125, 139, 0.5);
+  font: 500 20px/78px Gotham-Medium;
+  display: inline-block;
+  width: 30%;
+  max-width: 178px;
+  position: relative;
+  text-transform: capitalize;
+  user-select: none;
+}
+
+.tab .active {
+  color: var(--darkColor);
+}
+
+.tab .btn-block {
+  margin: 0;
+  transform: translateY(78px);
+  transition: transform 0.5s;
+}
+
+.tab.scroll .btn-block {
+  transform: translateY(13px);
+}
+
+/* 详情 */
+
+.detail-info-container {
+  padding: 48px 15px 64px;
+}
+
+.info-title {
+  font: 500 20px/32px Gotham-Medium;
+  color: var(--darkColor);
+  padding-bottom: 16px;
+}
+
+.info-title span {
+  font: 400 14px/20px Gotham-Book;
+  margin-left: 10px;
+}
+
+.detail-list {
+  padding: 16px 32px 32px;
+  border: 1px solid #000;
+  border-radius: 4px;
+  margin-bottom: 48px;
+}
+
+.detail-list li {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 16px;
+  line-height: 16px;
+}
+
+.detail-list p {
+  font: 500 14px/16px Gotham-Medium;
+}
+
+/* 公示 */
+
+.submit-claim {
+  padding-bottom: 46px;
+  border-bottom: 1px solid var(--very-light-blue);
+}
+
+.claim-list {
+  background: url(../../static/img/icon/web_icon_ID.png) no-repeat left top/48px;
+  border-bottom: 1px solid var(--very-light-blue);
+  padding: 0 0 48px 64px;
+}
+
+.submit-claim + ul > .claim-list:first-child,
+.claim-list + .claim-list {
+  padding-top: 48px;
+  background-position: left 48px;
+}
+
+.claim-list .info-title {
+  padding: 8px 0;
+  margin-bottom: 8px;
+}
+
+.claim-info {
+  background: var(--bgColor);
+  padding: 16px;
+  border-radius: 4px;
+  margin-bottom: 16px;
+}
+
+.claim-des {
+  font-size: 20px;
+  line-height: 28px;
+  position: relative;
+  overflow: hidden;
+}
+
+.claim-des.line-limit {
+  max-height: 84px;
+}
+
+.claim-text {
+  word-break: break-word;
+}
+
+.read-more,
+.collapse-more {
+  color: var(--darkColor) !important;
+  background: var(--bgColor);
+  font-size: 14px;
+  line-height: 28px;
+  cursor: pointer;
+}
+
+.read-more {
+  position: absolute;
+  padding-left: 4px;
+  right: 0;
+  bottom: 0;
+}
+
+.collapse-more {
+  text-align: right;
+}
+
+.vote-select {
+  float: left;
+  width: 160px;
+}
+
+.vote-info .btn {
+  padding: 0;
+  width: 60px;
+  text-align: center;
+  font: 500 12px/20px Gotham-Medium;
+  margin-bottom: 8px;
+}
+
+.vote-info .btn-grey {
+  background: var(--blueGrey);
+  opacity: 0.5;
+}
+
+.vote-info .discussion {
+  text-decoration: underline;
+  color: var(--blueGrey);
+}
+
+.no-claim {
+  text-align: center;
+  padding: 100px;
+  font-size: 20px;
+  color: var(--blueGrey);
+}
+
+/* 交易 */
+
+.exchange {
+  width: calc(100% - 164px);
+  margin-bottom: 50px;
+  float: left;
+  margin-right: 24px;
+}
+
+.exchange input {
+  width: 100%;
+  background: var(--bgColor);
+  padding: 16px 50px 16px 16px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+
+.trade .btn {
+  width: 140px;
+}
+
+.exchange > li {
+  float: left;
+}
+
+.exchange .basic-group {
+  width: calc(50% - 28px);
+}
+
+.exchange img {
+  margin: 0 16px;
+  padding: 14px 0;
+  width: 24px;
+  cursor: pointer;
+}
+
+.target-token {
+  line-height: 52px;
+}
+
+.history-tab {
+  padding-bottom: 16px;
+}
+
+.history-tab a {
+  margin-right: 48px;
+  float: left;
+  font: 500 20px/32px Gotham-Medium;
+  user-select: none;
+  color: rgba(96, 125, 139, 0.5);
+}
+
+.history-tab a:last-child {
+  margin: 0;
+}
+
+.history-tab a.active {
+  color: var(--darkColor);
+}
+
+.history-info {
+  font-size: 14px;
+  line-height: 16px;
+  padding: 12px 0;
+  overflow: hidden;
+  border-bottom: 1px solid var(--very-light-blue);
+}
+
+.more {
+  color: var(--darkColor);
+  font-size: 16px;
+  line-height: 20px;
+  margin: 10px 0;
+  display: block;
+}
+
+.history-time {
+  display: block;
+  margin-top: 8px;
+  color: var(--blueGrey);
+}
+
+#payment .modal-content {
+  padding: 24px;
+}
+
+.modal-title {
+  margin: 8px 0 32px;
+}
+
+.token-price {
+  float: right;
+  margin-top: 32px;
+}
+
+.equal {
+  display: block;
+  text-align: right;
+  color: #a9b9c1;
+  margin-top: 4px;
+}
+
+.modal .target-token {
+  color: var(--light-grey-blue);
+}
+
+@media (max-width: 767px) {
+  .project-detail {
+    padding: 32px 0 0;
+  }
+  .title,
+  .release-info {
+    padding-bottom: 24px;
+  }
+  .release-info span,
+  .release-info i {
+    display: block;
+  }
+  .pic {
+    height: 188px;
+  }
+  .program-info {
+    margin-bottom: 24px;
+    padding: 24px 16px 0;
+  }
+  .program-info li {
+    float: none;
+    width: 100%;
+  }
+  .pro-value {
+    font-size: 20px;
+    margin: 0;
+  }
+  .pro-key {
+    margin-bottom: 24px;
+    font-size: 12px;
+  }
+  .copy-btn {
+    margin-top: 12px;
+  }
+  .detail-info {
+    margin-top: 24px;
+  }
+  .detail-info.fixed {
+    padding-top: 60px;
+  }
+  .tab a {
+    max-width: 114px;
+    font-size: 16px;
+    height: 60px;
+    line-height: 60px;
+  }
+  .detail-info-container {
+    padding: 24px 15px 32px;
+  }
+  .detail-list {
+    padding: 0 16px 16px;
+    font-size: 12px;
+    margin-bottom: 24px;
+  }
+  .detail-list span {
+    max-width: 210px;
+  }
+  .detail-list p {
+    font-size: 12px;
+  }
+  .submit-claim {
+    padding-bottom: 24px;
+  }
+  .claim-list {
+    background: transparent;
+    padding: 0 0 24px 0;
+    font-size: 12px;
+  }
+  .submit-claim + ul > .claim-list:first-child,
+  .claim-list + .claim-list {
+    padding-top: 24px;
+  }
+  .info-title {
+    font-size: 16px;
+    line-height: 20px;
+  }
+  .info-title span {
+    font-size: 12px;
+  }
+  .claim-list .info-title {
+    line-height: 32px;
+    padding-left: 60px;
+    background: url(../../static/img/icon/web_icon_ID.png) no-repeat left
+      top/48px;
+  }
+  .claim-des {
+    font-size: 14px;
+    line-height: 24px;
+  }
+  .claim-des.line-limit {
+    max-height: 72px;
+  }
+  .vote-select {
+    width: calc(100% - 60px);
+    max-width: 160px;
+  }
+  .exchange {
+    float: none;
+    width: 100%;
+    margin: 0 0 32px;
+  }
+  .trade > article {
+    padding-bottom: 32px;
+    border-bottom: 1px solid var(--very-light-blue);
+    margin-bottom: 32px;
+  }
+  .trade .btn {
+    margin: 0 auto;
+    display: block;
+    width: 160px;
+  }
+  .exchange li {
+    float: none;
+  }
+  .exchange .basic-group {
+    width: 100%;
+  }
+  .exchange .swap-pic {
+    position: relative;
+    height: 16px;
+  }
+  .swap-pic img {
+    position: absolute;
+    right: 0;
+    padding: 8px;
+    margin: 0;
+    bottom: 8px;
+    width: 32px;
+    height: 32px;
+  }
+  .history-tab a {
+    font-size: 16px;
+    margin-right: 24px;
+  }
+  .collapse-more {
+    font-size: 14px;
+    line-height: 24px;
+  }
+}
 </style>

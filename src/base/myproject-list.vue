@@ -34,7 +34,7 @@
               :class="{'main-color':info.remaining<=0}"
             >{{info.remaining>0?$t('waiting_period').replace('%d',info.remaining):$t('effectivity')}}</span>
           </li>
-          <li>{{$t('join_time')}}：{{info.createDate}}</li>
+          <li>{{$t('join_time')}}：{{info.joinDate}}</li>
           <li>{{$t('mutual_aid_balance')}}：{{balance}} {{info.project.token}}</li>
         </ul>
         <p class="btn-box">
@@ -167,8 +167,6 @@ export default {
           .catch(err => {
             console.log(err);
           });
-      } else {
-        this.user = null;
       }
     }
   }

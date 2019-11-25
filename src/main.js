@@ -41,9 +41,7 @@ Vue.mixin({
   computed: {
     ...mapGetters({
       domain: "getDomain",
-      contract: "getContract",
       account: "account",
-      network: "getNetwork",
       isLoading: "isLoading"
     })
   },
@@ -71,14 +69,6 @@ Vue.mixin({
 });
 
 Vue.config.productionTip = false
-
-var _hmt = _hmt || [];
-(function() {
-  var hm = document.createElement("script");
-  hm.src = "https://hm.baidu.com/hm.js?d63151db8439ddaddb22641e98cf0ea6";
-  var s = document.getElementsByTagName("script")[0];
-  s.parentNode.insertBefore(hm, s);
-})();
 
 /* eslint-disable no-new */
 new Vue({
