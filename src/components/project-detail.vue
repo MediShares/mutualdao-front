@@ -154,7 +154,12 @@
                   <p class="btn copy-btn" @click="submitClaim">{{$t('submit_new_claim')}}</p>
                 </div>
                 <ul v-if="claimsList&&claimsList.length>0">
-                  <li class="claim-list" v-for="item in claimsList" :key="item.ID">
+                  <li
+                    class="claim-list"
+                    v-for="item in claimsList"
+                    :key="item.ID"
+                    :style="'backgroundImage:url(https://api.medishares.net/apiTools/getAddressHead?address='+item.proposer+'&v=1.0)'"
+                  >
                     <h4 class="info-title">{{item.proposer}}</h4>
                     <article class="claim-info">
                       <!-- 申请文案 -->
@@ -294,7 +299,7 @@
                       v-model="sellKeyNumber"
                       type="number"
                       pattern="[0-9]*"
-                      placeholder="10"
+                      placeholder="0"
                       autocomplete="off"
                     />
                     <span class="target-token">Key</span>
@@ -617,6 +622,8 @@ export default {
     },
     // 加入弹窗key与EOS比例
     joinKeyNumber(amount) {
+      // 获取分享人
+      this.sharer = this.webUtil.getQueryString("from");
       let assets = amount ? amount : 0;
       let dividendPercent = this.project.dividendPercent;
       // 如果没有分享人并且他的分享奖励大于0则将分享奖励按比例进入保障池和治理池
@@ -1441,6 +1448,8 @@ export default {
     },
     // 点击弹窗加入
     joinConfirm() {
+      // 获取分享人
+      this.sharer = this.webUtil.getQueryString("from");
       // 登录
       this.getAccount().then(account => {
         // 判断金额
@@ -1799,7 +1808,7 @@ export default {
 }
 
 .claim-list {
-  background: url(../../static/img/icon/web_icon_ID.png) no-repeat left top/48px;
+  background: url(../../static/img/icon/web_icon_ID.png) no-repeat 8px 8px/32px;
   border-bottom: 1px solid var(--very-light-blue);
   padding: 0 0 48px 64px;
 }
@@ -1807,7 +1816,7 @@ export default {
 .submit-claim + ul > .claim-list:first-child,
 .claim-list + .claim-list {
   padding-top: 48px;
-  background-position: left 48px;
+  background-position: 8px 56px;
 }
 
 .claim-list .info-title {

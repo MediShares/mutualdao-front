@@ -3,8 +3,11 @@
     <article class="container">
       <div class="row">
         <div class="col-md-8 col-md-offset-2">
-          <h2 class="project-title">Mutual aid of Major illness</h2>
-          <h4 class="info-title">{{claim.proposer}}</h4>
+          <h2 class="project-title">{{claim.title}}</h2>
+          <h4
+            class="info-title"
+            :style="'backgroundImage:url(https://api.medishares.net/apiTools/getAddressHead?address='+claim.proposer+'&v=1.0)'"
+          >{{claim.proposer}}</h4>
           <!-- 申请文案 -->
           <p class="claim-des" v-html="webUtil.getFormatCode(claim.story)"></p>
           <!-- 申请图片 -->
@@ -49,7 +52,11 @@
           <div class="submit" @click="submitComment">{{$t('comment')}}</div>
           <!-- 评论信息 -->
           <ul class="comment-info" v-if="comments&&comments.length>0">
-            <li v-for="item in comments" :key="item.ID">
+            <li
+              v-for="item in comments"
+              :key="item.ID"
+              :style="'backgroundImage:url(https://api.medishares.net/apiTools/getAddressHead?address='+item.proposer+'&v=1.0)'"
+            >
               <h4>{{item.user}}</h4>
               <p>{{item.content}}</p>
               <time>{{item.createDate}}</time>
@@ -201,12 +208,12 @@ export default {
       });
     },
     submitComment() {
-      this.setLoading(true);
       this.getAccount().then(account => {
         if (!this.comment.trim()) {
           this.$toast(this.$t("enter_comment"));
           return false;
         }
+        this.setLoading(true);
         this.$http
           .post(
             this.domain + "apiDao/submitComment?v=1.0",
@@ -258,10 +265,9 @@ h4 {
   color: var(--darkColor);
 }
 .info-title {
-  padding: 8px 0 8px 56px;
+  padding: 8px 0 8px 48px;
   margin: 32px 0 16px;
-  background: url(../../static/img/icon/web_icon_ID.png) no-repeat left
-    center/48px;
+  background: url(../../static/img/icon/web_icon_ID.png) no-repeat 0 8px/32px;
 }
 .pic-container {
   background: var(--bgColor);
@@ -284,7 +290,7 @@ h4 {
 .comment-info li {
   padding: 32px 0 24px 56px;
   border-top: 1px solid var(--very-light-blue);
-  background: url(../../static/img/icon/web_icon_ID.png) no-repeat left 20px/48px;
+  background: url(../../static/img/icon/web_icon_ID.png) no-repeat 8px 28px/32px;
 }
 .comment-info time {
   font-size: 14px;

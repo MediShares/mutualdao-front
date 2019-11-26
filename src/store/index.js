@@ -38,6 +38,7 @@ const mutations = {
   },
   logout(state) {
     state.account = null;
+    window.location.reload();
   },
 }
 const actions = {

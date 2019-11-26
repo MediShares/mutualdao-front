@@ -236,7 +236,7 @@ export default {
       window: "", //【 投票窗口期 】
       waitingPeriod: "", //【 等待期 】
       decimal: "4", //【 精度，非必须 】
-      targetAccount: "mdsdaotest21", //【 合约名，非必须 】
+      targetAccount: "mdsdaotest22", //【 合约名，非必须 】
       email: "" //【 邮箱，非必须 】
     };
   },

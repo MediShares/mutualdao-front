@@ -24,6 +24,9 @@ export default {
 };
 </script>
 <style scoped>
+#successModal .modal-title {
+  margin-bottom: 32px;
+}
 .modal .info {
   color: var(--blueGrey);
   font-size: 16px;
