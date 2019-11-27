@@ -60,7 +60,7 @@ module.exports = {
   executed: "已处理",
   execute: "处理",
   mutual_aid_balance: "我的余额",
-  exchange: "交换",
+  exchange: "出售",
   sell: "卖出",
   swap: "兑换",
   available: "可用",
