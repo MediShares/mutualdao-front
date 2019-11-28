@@ -2,7 +2,7 @@
   <div :class="[{ishome:isHome},'mds-nav']">
     <nav class="header-nav">
       <div class="container">
-        <router-link to="/" class="navbar-brand">Mutual Aid DAO</router-link>
+        <router-link to="/" class="navbar-brand">MutualDAO</router-link>
         <div v-show="!account" class="login pull-right" @click="login">{{$t("login")}}</div>
         <div v-if="account" class="dropdown personal pull-right">
           <a class="dropdown-toggle" data-toggle="dropdown" role="button">
