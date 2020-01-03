@@ -49,7 +49,7 @@ export default {
     getPrograms() {
       this.setLoading(true);
       this.$http
-        .get(this.domain + "/apiDao/getProjectList?v=1.0&page=1")
+        .get(this.domain + "apiDao/getProjectList?v=1.0&page=1")
         .then(res => {
           if (res.data.success) {
             this.programs = res.data.data.data;
