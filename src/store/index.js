@@ -8,7 +8,7 @@ const state = { //要设置的全局访问的state对象，初始属性值
   account: null,
   lang: i18n.locale,
   isLoading: true,
-  domain: process.env.NODE_ENV == 'development' ? 'http://rpcdev.xinchain.org/' : 'https://rpc.medishares.net/',
+  domain: 'https://rpc.medishares.net/',
 }
 const getters = { //实时监听state值的变化(最新状态)
   account(state) { //承载变化的值
