@@ -4,7 +4,7 @@
       <div class="container">
         <div class="title">
           <span>{{$t('title')}}</span>
-          <img src="static/img/icon/test.jpg" class="test-img" />
+          <!-- <img src="static/img/icon/test.jpg" class="test-img" /> -->
         </div>
         <div class="slogan">{{$t('slogan')}}</div>
         <!-- <a href="javascript:;" class="start btn" @click="createProject">{{$t('start_project')}}</a> -->
