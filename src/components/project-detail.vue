@@ -1591,12 +1591,10 @@ export default {
           if (row) {
             let key = row.base.balance.split(" ")[0];
             let price = row.quote.balance.split(" ")[0];
-            console.log(price, key);
 
             this.keyPrice = this.bigNumber(price)
               .div(key)
               .toFixed(4);
-            console.log(this.keyPrice);
           }
         })
         .catch(err => {
