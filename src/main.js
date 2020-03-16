@@ -32,6 +32,10 @@ Vue.mixin({
     return {
       BigNumber: bigNumber,
       tokenDecimals: 4, //代币精度
+      contract: {
+        EOS: "eosio.token",
+        EMDS: "medisharesbp",
+      },
       sctuser: sctuser,
       webUtil: util,
       contract_domain: "https://api-kylin.eosasia.one/",
