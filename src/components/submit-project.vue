@@ -108,13 +108,7 @@
             <!-- 筹款Token -->
             <label>{{$t('token_aid')}}</label>
             <p class="basic-group">
-              <select
-                class="basic-input"
-                name="token"
-                v-model="token"
-                @change="changetoken"
-                disabled
-              >
+              <select class="basic-input" name="token" v-model="token" @change="changetoken">
                 <option value="EOS">EOS</option>
                 <option value="EMDS">EMDS</option>
                 <option value="EUSD">EUSD</option>
