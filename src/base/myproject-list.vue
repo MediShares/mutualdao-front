@@ -159,7 +159,9 @@ export default {
                 let value = val.balance.split(" ")[0];
                 user[key] = value;
               });
-              this.balance = user.EOS ? user.EOS : 0;
+              this.balance = user[this.info.project.token]
+                ? user[this.info.project.token]
+                : 0;
             } else {
               this.balance = 0;
             }
