@@ -109,6 +109,7 @@ export default {
           if (res.data.success && res.data.data.data) {
             this.projectAccount = res.data.data.data.targetAccount;
             this.projectTitle = res.data.data.data.title;
+            this.token = res.data.data.data.token;
           } else {
             this.projectAccount = "";
             this.projectTitle = "";

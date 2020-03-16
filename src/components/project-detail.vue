@@ -394,7 +394,7 @@
               <span aria-hidden="true">&times;</span>
             </button>
             <h4 class="modal-title">{{$t('join')}}</h4>
-            <span class="token-price">1 EOS ≈ {{joinKeyNumber(1)}} Key</span>
+            <span class="token-price">1 {{project.token}} ≈ {{joinKeyNumber(1)}} Key</span>
             <label>{{$t('number_assets')}}</label>
             <p class="basic-group">
               <input
@@ -1487,7 +1487,7 @@ export default {
           .transaction({
             actions: [
               {
-                account: "eosio.token", // 合约名
+                account: this.contract[this.project.token], // 合约名
                 name: "transfer", // 合约方法
                 authorization: [
                   {
