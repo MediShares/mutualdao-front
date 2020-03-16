@@ -725,7 +725,9 @@ export default {
                       let value = val.balance.split(" ")[0];
                       this.user[key] = value;
                     });
-                    this.user.aidBalance = this.user.EOS ? this.user.EOS : 0;
+                    this.user.aidBalance = this.user[this.project.token]
+                      ? this.user[this.project.token]
+                      : 0;
                     this.user.Key = this.user.KEY ? this.user.KEY : 0;
                     this.user.SKey = this.user.SKEY ? this.user.SKEY : 0;
                     // 初始化交换可用数据
@@ -1589,9 +1591,12 @@ export default {
           if (row) {
             let key = row.base.balance.split(" ")[0];
             let price = row.quote.balance.split(" ")[0];
+            console.log(price, key);
+
             this.keyPrice = this.bigNumber(price)
               .div(key)
               .toFixed(4);
+            console.log(this.keyPrice);
           }
         })
         .catch(err => {
