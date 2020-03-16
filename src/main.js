@@ -38,8 +38,8 @@ Vue.mixin({
       },
       sctuser: sctuser,
       webUtil: util,
-      contract_domain: "https://api-kylin.eosasia.one/",
-      table_url: "https://api-kylin.eosasia.one/v1/chain/get_table_rows"
+      contract_domain: "https://eosmainnettrx.medishares.net",
+      table_url: "https://eosmainnettrx.medishares.net/v1/chain/get_table_rows"
     }
   },
   computed: {
