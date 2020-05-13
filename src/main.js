@@ -74,6 +74,15 @@ Vue.mixin({
 
 Vue.config.productionTip = false
 
+var _hmt = _hmt || [];
+
+(function() {
+  var hm = document.createElement("script");
+  hm.src = "https://hm.baidu.com/hm.js?da5a42ad3d95f1f14ed566057d00668e";
+  var s = document.getElementsByTagName("script")[0];
+  s.parentNode.insertBefore(hm, s);
+})();
+
 /* eslint-disable no-new */
 new Vue({
   el: '#app',
