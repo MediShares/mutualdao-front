@@ -56,7 +56,7 @@
                 <span>{{$t('blog')}}</span>
               </a>
             </li>
-            <li class="col-xs-6 col-sm-12">
+            <!-- <li class="col-xs-6 col-sm-12">
               <a href="javascript:;" class="qq" @mouseover="qrcodeShow" @mouseout="qrcodeHide">
                 <span class="contact-icon">
                   <img :src="$t('qq_kakao_icon')" />
@@ -66,7 +66,7 @@
                   <img :src="$t('qq_kakao_code')" width="100%" />
                 </div>
               </a>
-            </li>
+            </li> -->
           </ul>
         </div>
         <div class="col-xs-8 col-sm-2 code-img">

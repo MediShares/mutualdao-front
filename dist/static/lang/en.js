@@ -101,7 +101,7 @@ module.exports = {
   sell_success: "Sell Success",
   all_projects: "All projects",
   projects_list: "List all projects",
-  log_mds: "Login MediShares ",
+  log_mds: "Login Mutual DAO System ",
   log_scatter: "Log in by Scatter",
   log_scatter_tip: "Require Scatter to log in, this toolkit is protected by HTTPS,no external scripts loaded,we never store any private keys.",
   log_no_scatter: "No Scatter plugin?",
