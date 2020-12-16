@@ -158,7 +158,7 @@
                     class="claim-list"
                     v-for="item in claimsList"
                     :key="item.ID"
-                    :style="'backgroundImage:url(https://api.medishares.net/apiTools/getAddressHead?address='+item.proposer+'&v=1.0)'"
+                    :style="'backgroundImage:url(https://api.maiziqianbao.net/apiTools/getAddressHead?address='+item.proposer+'&v=1.0)'"
                   >
                     <h4 class="info-title">{{item.proposer}}</h4>
                     <article class="claim-info">
