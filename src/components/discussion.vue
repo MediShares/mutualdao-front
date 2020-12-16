@@ -6,7 +6,7 @@
           <h2 class="project-title">{{claim.title}}</h2>
           <h4
             class="info-title"
-            :style="'backgroundImage:url(https://api.medishares.net/apiTools/getAddressHead?address='+claim.proposer+'&v=1.0)'"
+            :style="'backgroundImage:url(https://api.maiziqianbao.net/apiTools/getAddressHead?address='+claim.proposer+'&v=1.0)'"
           >{{claim.proposer}}</h4>
           <!-- 申请文案 -->
           <p class="claim-des" v-html="webUtil.getFormatCode(claim.story)"></p>
@@ -55,7 +55,7 @@
             <li
               v-for="item in comments"
               :key="item.ID"
-              :style="'backgroundImage:url(https://api.medishares.net/apiTools/getAddressHead?address='+item.proposer+'&v=1.0)'"
+              :style="'backgroundImage:url(https://api.maiziqianbao.net/apiTools/getAddressHead?address='+item.proposer+'&v=1.0)'"
             >
               <h4>{{item.user}}</h4>
               <p>{{item.content}}</p>
